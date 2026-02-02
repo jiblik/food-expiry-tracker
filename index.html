@@ -23,21 +23,34 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+        }
+
+        .logo-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo {
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
         }
 
         h1 {
             color: #2c5282;
-            font-size: 1.5rem;
+            font-size: 1.3rem;
         }
 
         .lang-btn {
             background: #e2e8f0;
             border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
+            padding: 4px 8px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 11px;
+            color: #666;
         }
 
         .sync-status {
@@ -186,7 +199,10 @@
 <body>
     <div class="container">
         <header>
-            <h1 id="title">🍎 מעקב תפוגה</h1>
+            <div class="logo-title">
+                <img src="logo.png" alt="Logo" class="logo">
+                <h1 id="title">מעקב תפוגה</h1>
+            </div>
             <button class="lang-btn" onclick="toggleLang()" id="langBtn">RU</button>
         </header>
         <div class="sync-status" id="syncStatus">🔄 טוען...</div>
@@ -233,7 +249,7 @@
 
         const translations = {
             he: {
-                title: '🍎 מעקב תפוגה',
+                title: 'מעקב תפוגה',
                 search: '🔍 חיפוש מוצר...',
                 labelName: 'שם המוצר',
                 labelCategory: 'קטגוריה',
@@ -261,7 +277,7 @@
                 }
             },
             ru: {
-                title: '🍎 Срок годности',
+                title: 'Срок годности',
                 search: '🔍 Поиск продукта...',
                 labelName: 'Название продукта',
                 labelCategory: 'Категория',
