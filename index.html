@@ -39,19 +39,6 @@
         .sync-status.syncing { color: #3182ce; }
         .sync-status.error { color: #e53e3e; }
 
-        /* חיפוש */
-        .search-box {
-            margin-bottom: 15px;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-
         /* טופס */
         .form-box {
             background: white;
@@ -170,11 +157,6 @@
             <h1>🍎 מעקב תפוגה</h1>
         </header>
         <div class="sync-status" id="syncStatus">🔄 טוען...</div>
-
-        <!-- חיפוש -->
-        <div class="search-box">
-            <input type="text" id="search" placeholder="🔍 חיפוש מוצר..." oninput="render()">
-        </div>
 
         <div class="form-box">
             <label>שם המוצר</label>
@@ -343,24 +325,16 @@
         // תצוגה
         function render() {
             const list = document.getElementById('list');
-            const searchTerm = document.getElementById('search').value.trim().toLowerCase();
 
-            let filtered = products;
-            if (searchTerm) {
-                filtered = products.filter(p =>
-                    p.name && p.name.toLowerCase().includes(searchTerm)
-                );
-            }
-
-            if (filtered.length === 0) {
+            if (products.length === 0) {
                 list.innerHTML = '<div class="empty">אין מוצרים עדיין</div>';
                 return;
             }
 
             // מיון לפי תאריך
-            filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+            products.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-            list.innerHTML = filtered.map(p => {
+            list.innerHTML = products.map(p => {
                 const days = getDays(p.date);
                 let cls = '';
                 let status = '';
