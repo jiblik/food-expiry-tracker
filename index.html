@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מעקב תפוגה</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f4f8;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c5282;
+            margin-bottom: 20px;
+        }
+
+        /* טופס */
+        .form-box {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .form-box label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-box input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .image-area {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 15px;
+            background-size: cover;
+            background-position: center;
+            min-height: 120px;
+        }
+
+        .image-area:hover { border-color: #2c5282; }
+
+        #imageInput { display: none; }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #2c5282;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover { background: #1a365d; }
+
+        /* רשימה */
+        .product {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .product.warning { border-right: 4px solid #f6ad55; background: #fffaf0; }
+        .product.danger { border-right: 4px solid #fc8181; background: #fff5f5; }
+
+        .product img {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .product .no-img {
+            width: 60px;
+            height: 60px;
+            background: #e2e8f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .product-info { flex: 1; }
+        .product-name { font-weight: bold; margin-bottom: 4px; }
+        .product-date { color: #666; font-size: 14px; }
+        .product-status { font-size: 13px; font-weight: bold; margin-top: 4px; }
+        .product-status.warning { color: #c05621; }
+        .product-status.danger { color: #c53030; }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #e53e3e;
+            cursor: pointer;
+            font-size: 20px;
+            width: auto;
+            padding: 5px 10px;
+        }
+
+        .empty { text-align: center; color: #888; padding: 40px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍎 מעקב תפוגה</h1>
+
+        <div class="form-box">
+            <label>שם המוצר</label>
+            <input type="text" id="name" placeholder="לדוגמה: חלב תנובה">
+
+            <label>תאריך תפוגה</label>
+            <input type="date" id="date">
+
+            <label>תמונה (לא חובה)</label>
+            <div class="image-area" id="imageArea" onclick="document.getElementById('imageInput').click()">
+                📷 לחץ לצילום או בחירת תמונה
+            </div>
+            <input type="file" id="imageInput" accept="image/*" capture="environment">
+
+            <button onclick="addProduct()">➕ הוסף מוצר</button>
+        </div>
+
+        <div id="list"></div>
+    </div>
+
+    <script>
+        let products = JSON.parse(localStorage.getItem('products') || '[]');
+        let currentImage = null;
+
+        // תמונה
+        document.getElementById('imageInput').onchange = function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentImage = e.target.result;
+                    document.getElementById('imageArea').style.backgroundImage = `url(${currentImage})`;
+                    document.getElementById('imageArea').textContent = '';
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        // הוספה
+        function addProduct() {
+            const name = document.getElementById('name').value.trim();
+            const date = document.getElementById('date').value;
+
+            if (!name || !date) {
+                alert('נא למלא שם ותאריך');
+                return;
+            }
+
+            products.push({
+                id: Date.now(),
+                name: name,
+                date: date,
+                image: currentImage
+            });
+
+            save();
+
+            // ניקוי
+            document.getElementById('name').value = '';
+            document.getElementById('date').value = '';
+            document.getElementById('imageArea').style.backgroundImage = '';
+            document.getElementById('imageArea').textContent = '📷 לחץ לצילום או בחירת תמונה';
+            currentImage = null;
+
+            render();
+        }
+
+        // מחיקה
+        function deleteProduct(id) {
+            products = products.filter(p => p.id !== id);
+            save();
+            render();
+        }
+
+        // שמירה
+        function save() {
+            localStorage.setItem('products', JSON.stringify(products));
+        }
+
+        // חישוב ימים
+        function getDays(date) {
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            const exp = new Date(date);
+            exp.setHours(0,0,0,0);
+            return Math.ceil((exp - today) / (1000 * 60 * 60 * 24));
+        }
+
+        // תצוגה
+        function render() {
+            const list = document.getElementById('list');
+
+            if (products.length === 0) {
+                list.innerHTML = '<div class="empty">אין מוצרים עדיין</div>';
+                return;
+            }
+
+            // מיון לפי תאריך
+            products.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            list.innerHTML = products.map(p => {
+                const days = getDays(p.date);
+                let cls = '';
+                let status = '';
+
+                if (days < 0) {
+                    cls = 'danger';
+                    status = '<div class="product-status danger">⚠️ פג תוקף!</div>';
+                } else if (days === 0) {
+                    cls = 'danger';
+                    status = '<div class="product-status danger">⚠️ פג היום!</div>';
+                } else if (days === 1) {
+                    cls = 'warning';
+                    status = '<div class="product-status warning">⏰ פג מחר!</div>';
+                } else if (days <= 3) {
+                    cls = 'warning';
+                    status = `<div class="product-status warning">⏰ פג בעוד ${days} ימים</div>`;
+                }
+
+                const dateStr = new Date(p.date).toLocaleDateString('he-IL');
+                const img = p.image
+                    ? `<img src="${p.image}" alt="">`
+                    : '<div class="no-img">📦</div>';
+
+                return `
+                    <div class="product ${cls}">
+                        ${img}
+                        <div class="product-info">
+                            <div class="product-name">${p.name}</div>
+                            <div class="product-date">תפוגה: ${dateStr}</div>
+                            ${status}
+                        </div>
+                        <button class="delete-btn" onclick="deleteProduct(${p.id})">🗑️</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        render();
+    </script>
+</body>
+</html>
