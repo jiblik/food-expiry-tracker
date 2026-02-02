@@ -177,20 +177,20 @@
             gap: 5px;
         }
 
-        .btn-used, .btn-delete {
+        .btn-eaten, .btn-trash {
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px;
             width: auto;
-            padding: 5px 8px;
+            padding: 4px 6px;
             border-radius: 4px;
         }
 
-        .btn-used { color: #38a169; }
-        .btn-used:hover { background: #e6ffed; }
-        .btn-delete { color: #e53e3e; }
-        .btn-delete:hover { background: #ffe6e6; }
+        .btn-eaten { color: #38a169; }
+        .btn-eaten:hover { background: #e6ffed; }
+        .btn-trash { color: #e53e3e; }
+        .btn-trash:hover { background: #ffe6e6; }
 
         .empty { text-align: center; color: #888; padding: 40px; }
         .loading { text-align: center; color: #888; padding: 40px; }
@@ -267,6 +267,8 @@
                 days: '⏰ פג בעוד {n} ימים',
                 expiry: 'תפוגה:',
                 fillFields: 'נא למלא שם ותאריך',
+                eaten: 'נאכל',
+                thrown: 'נזרק',
                 categories: {
                     dairy: '🥛 חלבי',
                     meat: '🥩 בשרי',
@@ -295,6 +297,8 @@
                 days: '⏰ Истекает через {n} дней',
                 expiry: 'Годен до:',
                 fillFields: 'Заполните название и дату',
+                eaten: 'Съедено',
+                thrown: 'Выброшено',
                 categories: {
                     dairy: '🥛 Молочное',
                     meat: '🥩 Мясное',
@@ -434,8 +438,8 @@
             btn.textContent = t('addBtn');
         }
 
-        // סימון כנצרך
-        async function markUsed(id) {
+        // סימון כנאכל
+        async function markEaten(id) {
             setStatus(t('loading'), 'syncing');
             try {
                 await fetch(API_URL + '?action=delete&id=' + id);
@@ -445,8 +449,8 @@
             }
         }
 
-        // מחיקת מוצר
-        async function deleteProduct(id) {
+        // סימון כנזרק
+        async function markThrown(id) {
             setStatus(t('loading'), 'syncing');
             try {
                 await fetch(API_URL + '?action=delete&id=' + id);
@@ -530,8 +534,8 @@
                             ${status}
                         </div>
                         <div class="product-actions">
-                            <button class="btn-used" onclick="markUsed('${p.id}')" title="נצרך">✓</button>
-                            <button class="btn-delete" onclick="deleteProduct('${p.id}')" title="מחק">🗑️</button>
+                            <button class="btn-eaten" onclick="markEaten('${p.id}')" title="${t('eaten')}">😋</button>
+                            <button class="btn-trash" onclick="markThrown('${p.id}')" title="${t('thrown')}">🗑️</button>
                         </div>
                     </div>
                 `;
