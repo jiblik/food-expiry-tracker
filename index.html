@@ -25,6 +25,16 @@
             margin-bottom: 20px;
         }
 
+        .sync-status {
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 15px;
+        }
+
+        .sync-status.syncing { color: #3182ce; }
+        .sync-status.error { color: #e53e3e; }
+
         /* טופס */
         .form-box {
             background: white;
@@ -77,6 +87,7 @@
         }
 
         button:hover { background: #1a365d; }
+        button:disabled { background: #a0aec0; cursor: not-allowed; }
 
         /* רשימה */
         .product {
@@ -129,11 +140,13 @@
         }
 
         .empty { text-align: center; color: #888; padding: 40px; }
+        .loading { text-align: center; color: #888; padding: 40px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🍎 מעקב תפוגה</h1>
+        <div class="sync-status" id="syncStatus">🔄 טוען...</div>
 
         <div class="form-box">
             <label>שם המוצר</label>
@@ -148,15 +161,19 @@
             </div>
             <input type="file" id="imageInput" accept="image/*" capture="environment">
 
-            <button type="button" onclick="addProduct()">➕ הוסף מוצר</button>
+            <button type="button" id="addBtn" onclick="addProduct()">➕ הוסף מוצר</button>
         </div>
 
-        <div id="list"></div>
+        <div id="list"><div class="loading">🔄 טוען מוצרים...</div></div>
     </div>
 
     <script>
-        let products = JSON.parse(localStorage.getItem('products') || '[]');
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyohF7wtGg8JP1GuNGUB39MY2xADikFI25lAQPqQDfE-O-gHxC21cR2O0gH0dzM1Qzb/exec';
+        let products = [];
         let currentImage = null;
+
+        // טעינה ראשונית
+        loadProducts();
 
         // תמונה
         document.getElementById('imageInput').onchange = function(e) {
@@ -172,8 +189,22 @@
             }
         };
 
-        // הוספה
-        function addProduct() {
+        // טעינת מוצרים מהשרת
+        async function loadProducts() {
+            try {
+                setStatus('🔄 טוען...', 'syncing');
+                const response = await fetch(API_URL + '?action=get');
+                products = await response.json();
+                render();
+                setStatus('✅ מסונכרן', '');
+            } catch (error) {
+                setStatus('❌ שגיאה בטעינה', 'error');
+                console.error(error);
+            }
+        }
+
+        // הוספת מוצר
+        async function addProduct() {
             const name = document.getElementById('name').value.trim();
             const date = document.getElementById('date').value;
 
@@ -182,35 +213,60 @@
                 return;
             }
 
-            products.push({
-                id: Date.now(),
-                name: name,
-                date: date,
-                image: currentImage
-            });
+            const btn = document.getElementById('addBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ שומר...';
+            setStatus('🔄 שומר...', 'syncing');
 
-            save();
+            const id = Date.now().toString();
 
-            // ניקוי
-            document.getElementById('name').value = '';
-            document.getElementById('date').value = '';
-            document.getElementById('imageArea').style.backgroundImage = '';
-            document.getElementById('imageArea').textContent = '📷 לחץ לצילום או בחירת תמונה';
-            currentImage = null;
+            try {
+                const params = new URLSearchParams({
+                    action: 'add',
+                    id: id,
+                    name: name,
+                    date: date,
+                    image: currentImage || ''
+                });
 
-            render();
+                await fetch(API_URL + '?' + params.toString());
+
+                // ניקוי
+                document.getElementById('name').value = '';
+                document.getElementById('date').value = '';
+                document.getElementById('imageArea').style.backgroundImage = '';
+                document.getElementById('imageArea').textContent = '📷 לחץ לצילום או בחירת תמונה';
+                currentImage = null;
+
+                // טעינה מחדש
+                await loadProducts();
+            } catch (error) {
+                setStatus('❌ שגיאה בשמירה', 'error');
+                console.error(error);
+            }
+
+            btn.disabled = false;
+            btn.textContent = '➕ הוסף מוצר';
         }
 
-        // מחיקה
-        function deleteProduct(id) {
-            products = products.filter(p => p.id !== id);
-            save();
-            render();
+        // מחיקת מוצר
+        async function deleteProduct(id) {
+            setStatus('🔄 מוחק...', 'syncing');
+
+            try {
+                await fetch(API_URL + '?action=delete&id=' + id);
+                await loadProducts();
+            } catch (error) {
+                setStatus('❌ שגיאה במחיקה', 'error');
+                console.error(error);
+            }
         }
 
-        // שמירה
-        function save() {
-            localStorage.setItem('products', JSON.stringify(products));
+        // עדכון סטטוס
+        function setStatus(text, className) {
+            const el = document.getElementById('syncStatus');
+            el.textContent = text;
+            el.className = 'sync-status ' + className;
         }
 
         // חישוב ימים
@@ -266,13 +322,11 @@
                             <div class="product-date">תפוגה: ${dateStr}</div>
                             ${status}
                         </div>
-                        <button class="delete-btn" onclick="deleteProduct(${p.id})">🗑️</button>
+                        <button class="delete-btn" onclick="deleteProduct('${p.id}')">🗑️</button>
                     </div>
                 `;
             }).join('');
         }
-
-        render();
     </script>
 </body>
 </html>
