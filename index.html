@@ -19,10 +19,25 @@
             margin: 0 auto;
         }
 
-        h1 {
-            text-align: center;
-            color: #2c5282;
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #2c5282;
+            font-size: 1.5rem;
+        }
+
+        .lang-btn {
+            background: #e2e8f0;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
         }
 
         .sync-status {
@@ -34,6 +49,19 @@
 
         .sync-status.syncing { color: #3182ce; }
         .sync-status.error { color: #e53e3e; }
+
+        /* חיפוש */
+        .search-box {
+            margin-bottom: 15px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
 
         /* טופס */
         .form-box {
@@ -50,7 +78,7 @@
             font-weight: bold;
         }
 
-        .form-box input {
+        .form-box input, .form-box select {
             width: 100%;
             padding: 12px;
             margin-bottom: 15px;
@@ -97,7 +125,7 @@
             margin-bottom: 10px;
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
@@ -105,39 +133,51 @@
         .product.danger { border-right: 4px solid #fc8181; background: #fff5f5; }
 
         .product img {
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             border-radius: 8px;
             object-fit: cover;
         }
 
         .product .no-img {
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             background: #e2e8f0;
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 20px;
         }
 
         .product-info { flex: 1; }
-        .product-name { font-weight: bold; margin-bottom: 4px; }
-        .product-date { color: #666; font-size: 14px; }
-        .product-status { font-size: 13px; font-weight: bold; margin-top: 4px; }
+        .product-name { font-weight: bold; margin-bottom: 2px; font-size: 15px; }
+        .product-meta { color: #666; font-size: 13px; }
+        .product-category { font-size: 11px; color: #888; }
+        .product-status { font-size: 12px; font-weight: bold; margin-top: 2px; }
         .product-status.warning { color: #c05621; }
         .product-status.danger { color: #c53030; }
 
-        .delete-btn {
+        .product-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .btn-used, .btn-delete {
             background: none;
             border: none;
-            color: #e53e3e;
             cursor: pointer;
-            font-size: 20px;
+            font-size: 16px;
             width: auto;
-            padding: 5px 10px;
+            padding: 5px 8px;
+            border-radius: 4px;
         }
+
+        .btn-used { color: #38a169; }
+        .btn-used:hover { background: #e6ffed; }
+        .btn-delete { color: #e53e3e; }
+        .btn-delete:hover { background: #ffe6e6; }
 
         .empty { text-align: center; color: #888; padding: 40px; }
         .loading { text-align: center; color: #888; padding: 40px; }
@@ -145,19 +185,37 @@
 </head>
 <body>
     <div class="container">
-        <h1>🍎 מעקב תפוגה</h1>
+        <header>
+            <h1 id="title">🍎 מעקב תפוגה</h1>
+            <button class="lang-btn" onclick="toggleLang()" id="langBtn">RU</button>
+        </header>
         <div class="sync-status" id="syncStatus">🔄 טוען...</div>
 
-        <div class="form-box">
-            <label>שם המוצר</label>
-            <input type="text" id="name" placeholder="לדוגמה: חלב תנובה">
+        <!-- חיפוש -->
+        <div class="search-box">
+            <input type="text" id="search" placeholder="🔍 חיפוש מוצר..." oninput="render()">
+        </div>
 
-            <label>תאריך תפוגה</label>
+        <div class="form-box">
+            <label id="labelName">שם המוצר</label>
+            <input type="text" id="name" placeholder="">
+
+            <label id="labelCategory">קטגוריה</label>
+            <select id="category">
+                <option value="dairy">🥛 חלבי</option>
+                <option value="meat">🥩 בשרי</option>
+                <option value="vegetables">🥬 ירקות ופירות</option>
+                <option value="bread">🍞 לחם ומאפים</option>
+                <option value="frozen">🧊 קפוא</option>
+                <option value="other">📦 אחר</option>
+            </select>
+
+            <label id="labelDate">תאריך תפוגה</label>
             <input type="date" id="date">
 
-            <label>תמונה (לא חובה)</label>
+            <label id="labelImage">תמונה (לא חובה)</label>
             <div class="image-area" id="imageArea" onclick="document.getElementById('imageInput').click()">
-                📷 לחץ לצילום או בחירת תמונה
+                <span id="imageText">📷 לחץ לצילום</span>
             </div>
             <input type="file" id="imageInput" accept="image/*" capture="environment">
 
@@ -171,9 +229,103 @@
         const API_URL = 'https://script.google.com/macros/s/AKfycbyohF7wtGg8JP1GuNGUB39MY2xADikFI25lAQPqQDfE-O-gHxC21cR2O0gH0dzM1Qzb/exec';
         let products = [];
         let currentImage = null;
+        let lang = localStorage.getItem('lang') || 'he';
+
+        const translations = {
+            he: {
+                title: '🍎 מעקב תפוגה',
+                search: '🔍 חיפוש מוצר...',
+                labelName: 'שם המוצר',
+                labelCategory: 'קטגוריה',
+                labelDate: 'תאריך תפוגה',
+                labelImage: 'תמונה (לא חובה)',
+                imageText: '📷 לחץ לצילום',
+                addBtn: '➕ הוסף מוצר',
+                saving: '⏳ שומר...',
+                loading: '🔄 טוען...',
+                synced: '✅ מסונכרן',
+                empty: 'אין מוצרים עדיין',
+                expired: '⚠️ פג תוקף!',
+                today: '⚠️ פג היום!',
+                tomorrow: '⏰ פג מחר!',
+                days: '⏰ פג בעוד {n} ימים',
+                expiry: 'תפוגה:',
+                fillFields: 'נא למלא שם ותאריך',
+                categories: {
+                    dairy: '🥛 חלבי',
+                    meat: '🥩 בשרי',
+                    vegetables: '🥬 ירקות ופירות',
+                    bread: '🍞 לחם ומאפים',
+                    frozen: '🧊 קפוא',
+                    other: '📦 אחר'
+                }
+            },
+            ru: {
+                title: '🍎 Срок годности',
+                search: '🔍 Поиск продукта...',
+                labelName: 'Название продукта',
+                labelCategory: 'Категория',
+                labelDate: 'Срок годности',
+                labelImage: 'Фото (необязательно)',
+                imageText: '📷 Нажмите для фото',
+                addBtn: '➕ Добавить',
+                saving: '⏳ Сохранение...',
+                loading: '🔄 Загрузка...',
+                synced: '✅ Синхронизировано',
+                empty: 'Нет продуктов',
+                expired: '⚠️ Просрочено!',
+                today: '⚠️ Истекает сегодня!',
+                tomorrow: '⏰ Истекает завтра!',
+                days: '⏰ Истекает через {n} дней',
+                expiry: 'Годен до:',
+                fillFields: 'Заполните название и дату',
+                categories: {
+                    dairy: '🥛 Молочное',
+                    meat: '🥩 Мясное',
+                    vegetables: '🥬 Овощи и фрукты',
+                    bread: '🍞 Хлеб и выпечка',
+                    frozen: '🧊 Замороженное',
+                    other: '📦 Другое'
+                }
+            }
+        };
+
+        function t(key) {
+            return translations[lang][key] || key;
+        }
+
+        function updateUI() {
+            document.getElementById('title').textContent = t('title');
+            document.getElementById('search').placeholder = t('search');
+            document.getElementById('labelName').textContent = t('labelName');
+            document.getElementById('labelCategory').textContent = t('labelCategory');
+            document.getElementById('labelDate').textContent = t('labelDate');
+            document.getElementById('labelImage').textContent = t('labelImage');
+            document.getElementById('imageText').textContent = t('imageText');
+            document.getElementById('addBtn').textContent = t('addBtn');
+            document.getElementById('langBtn').textContent = lang === 'he' ? 'RU' : 'עב';
+            document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
+            document.documentElement.lang = lang;
+
+            // Update category options
+            const cat = document.getElementById('category');
+            const cats = t('categories');
+            cat.innerHTML = Object.entries(cats).map(([k, v]) =>
+                `<option value="${k}">${v}</option>`
+            ).join('');
+
+            render();
+        }
+
+        function toggleLang() {
+            lang = lang === 'he' ? 'ru' : 'he';
+            localStorage.setItem('lang', lang);
+            updateUI();
+        }
 
         // טעינה ראשונית
         loadProducts();
+        updateUI();
 
         // סנכרון אוטומטי כל 30 שניות
         setInterval(loadProducts, 30000);
@@ -206,7 +358,7 @@
                     canvas.getContext('2d').drawImage(img, 0, 0, width, height);
                     currentImage = canvas.toDataURL('image/jpeg', 0.5);
                     document.getElementById('imageArea').style.backgroundImage = `url(${currentImage})`;
-                    document.getElementById('imageArea').textContent = '';
+                    document.getElementById('imageText').style.display = 'none';
                 };
                 img.src = URL.createObjectURL(file);
             }
@@ -215,13 +367,13 @@
         // טעינת מוצרים מהשרת
         async function loadProducts() {
             try {
-                setStatus('🔄 טוען...', 'syncing');
+                setStatus(t('loading'), 'syncing');
                 const response = await fetch(API_URL + '?action=get');
                 products = await response.json();
                 render();
-                setStatus('✅ מסונכרן', '');
+                setStatus(t('synced'), '');
             } catch (error) {
-                setStatus('❌ שגיאה בטעינה', 'error');
+                setStatus('❌ Error', 'error');
                 console.error(error);
             }
         }
@@ -230,51 +382,61 @@
         async function addProduct() {
             const name = document.getElementById('name').value.trim();
             const date = document.getElementById('date').value;
+            const category = document.getElementById('category').value;
 
             if (!name || !date) {
-                alert('נא למלא שם ותאריך');
+                alert(t('fillFields'));
                 return;
             }
 
             const btn = document.getElementById('addBtn');
             btn.disabled = true;
-            btn.textContent = '⏳ שומר...';
-            setStatus('🔄 שומר...', 'syncing');
+            btn.textContent = t('saving');
+            setStatus(t('loading'), 'syncing');
 
             const id = Date.now().toString();
 
             try {
-                const url = API_URL + '?action=add&id=' + id + '&name=' + encodeURIComponent(name) + '&date=' + date + '&image=' + encodeURIComponent(currentImage || '');
+                const url = API_URL + '?action=add&id=' + id + '&name=' + encodeURIComponent(name) + '&date=' + date + '&category=' + category + '&image=' + encodeURIComponent(currentImage || '');
                 await fetch(url, { method: 'GET', mode: 'no-cors' });
 
                 // ניקוי
                 document.getElementById('name').value = '';
                 document.getElementById('date').value = '';
                 document.getElementById('imageArea').style.backgroundImage = '';
-                document.getElementById('imageArea').textContent = '📷 לחץ לצילום או בחירת תמונה';
+                document.getElementById('imageText').style.display = '';
                 currentImage = null;
 
-                // טעינה מחדש
-                await loadProducts();
+                // המתנה קצרה ואז טעינה מחדש
+                setTimeout(loadProducts, 1500);
             } catch (error) {
-                setStatus('❌ שגיאה בשמירה', 'error');
+                setStatus('❌ Error', 'error');
                 console.error(error);
             }
 
             btn.disabled = false;
-            btn.textContent = '➕ הוסף מוצר';
+            btn.textContent = t('addBtn');
         }
 
-        // מחיקת מוצר
-        async function deleteProduct(id) {
-            setStatus('🔄 מוחק...', 'syncing');
-
+        // סימון כנצרך
+        async function markUsed(id) {
+            setStatus(t('loading'), 'syncing');
             try {
                 await fetch(API_URL + '?action=delete&id=' + id);
                 await loadProducts();
             } catch (error) {
-                setStatus('❌ שגיאה במחיקה', 'error');
-                console.error(error);
+                setStatus('❌ Error', 'error');
+            }
+        }
+
+        // מחיקת מוצר
+        async function deleteProduct(id) {
+            setStatus(t('loading'), 'syncing');
+            try {
+                await fetch(API_URL + '?action=delete&id=' + id);
+                await loadProducts();
+            } catch (error) {
+                setStatus('❌ Error', 'error');
             }
         }
 
@@ -297,48 +459,64 @@
         // תצוגה
         function render() {
             const list = document.getElementById('list');
+            const searchTerm = document.getElementById('search').value.trim().toLowerCase();
 
-            if (products.length === 0) {
-                list.innerHTML = '<div class="empty">אין מוצרים עדיין</div>';
+            let filtered = products;
+            if (searchTerm) {
+                filtered = products.filter(p =>
+                    p.name && p.name.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            if (filtered.length === 0) {
+                list.innerHTML = `<div class="empty">${t('empty')}</div>`;
                 return;
             }
 
             // מיון לפי תאריך
-            products.sort((a, b) => new Date(a.date) - new Date(b.date));
+            filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-            list.innerHTML = products.map(p => {
+            const cats = t('categories');
+
+            list.innerHTML = filtered.map(p => {
                 const days = getDays(p.date);
                 let cls = '';
                 let status = '';
 
                 if (days < 0) {
                     cls = 'danger';
-                    status = '<div class="product-status danger">⚠️ פג תוקף!</div>';
+                    status = `<div class="product-status danger">${t('expired')}</div>`;
                 } else if (days === 0) {
                     cls = 'danger';
-                    status = '<div class="product-status danger">⚠️ פג היום!</div>';
+                    status = `<div class="product-status danger">${t('today')}</div>`;
                 } else if (days === 1) {
                     cls = 'warning';
-                    status = '<div class="product-status warning">⏰ פג מחר!</div>';
+                    status = `<div class="product-status warning">${t('tomorrow')}</div>`;
                 } else if (days <= 3) {
                     cls = 'warning';
-                    status = `<div class="product-status warning">⏰ פג בעוד ${days} ימים</div>`;
+                    status = `<div class="product-status warning">${t('days').replace('{n}', days)}</div>`;
                 }
 
-                const dateStr = new Date(p.date).toLocaleDateString('he-IL');
+                const dateStr = new Date(p.date).toLocaleDateString(lang === 'he' ? 'he-IL' : 'ru-RU');
                 const img = p.image
                     ? `<img src="${p.image}" alt="">`
                     : '<div class="no-img">📦</div>';
+
+                const catName = cats[p.category] || cats['other'];
 
                 return `
                     <div class="product ${cls}">
                         ${img}
                         <div class="product-info">
                             <div class="product-name">${p.name}</div>
-                            <div class="product-date">תפוגה: ${dateStr}</div>
+                            <div class="product-category">${catName}</div>
+                            <div class="product-meta">${t('expiry')} ${dateStr}</div>
                             ${status}
                         </div>
-                        <button class="delete-btn" onclick="deleteProduct('${p.id}')">🗑️</button>
+                        <div class="product-actions">
+                            <button class="btn-used" onclick="markUsed('${p.id}')" title="נצרך">✓</button>
+                            <button class="btn-delete" onclick="deleteProduct('${p.id}')" title="מחק">🗑️</button>
+                        </div>
                     </div>
                 `;
             }).join('');
