@@ -175,6 +175,9 @@
         // טעינה ראשונית
         loadProducts();
 
+        // סנכרון אוטומטי כל 30 שניות
+        setInterval(loadProducts, 30000);
+
         // תמונה - עם הקטנה
         document.getElementById('imageInput').onchange = function(e) {
             const file = e.target.files[0];
