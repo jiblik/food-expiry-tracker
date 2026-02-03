@@ -42,13 +42,37 @@
             text-align: center;
             font-size: 12px;
             color: rgba(255,255,255,0.5);
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             font-weight: 300;
             letter-spacing: 1px;
         }
 
         .sync-status.syncing { color: rgba(255,200,100,0.8); }
         .sync-status.error { color: rgba(255,100,100,0.8); }
+
+        /* טאבים */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .tab-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: rgba(233,69,96,0.8);
+            color: white;
+        }
 
         /* כפתור הוספה */
         .add-btn {
@@ -142,6 +166,13 @@
             font-weight: 300;
         }
 
+        .product-price {
+            font-size: 14px;
+            color: rgba(100,255,150,0.9);
+            font-weight: 400;
+            margin-top: 2px;
+        }
+
         .product-category {
             font-size: 11px;
             color: rgba(255,255,255,0.4);
@@ -207,6 +238,16 @@
             color: #ff6b6b;
         }
 
+        .btn-action.eaten:hover {
+            background: rgba(100,255,150,0.3);
+            color: #64ff96;
+        }
+
+        .btn-action.thrown:hover {
+            background: rgba(255,150,100,0.3);
+            color: #ff9664;
+        }
+
         .empty {
             text-align: center;
             color: rgba(255,255,255,0.4);
@@ -221,6 +262,107 @@
             color: rgba(255,255,255,0.4);
             padding: 80px 20px;
             font-weight: 300;
+        }
+
+        /* סטטיסטיקות */
+        .stats-box {
+            background: rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .stats-title {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+        }
+
+        .stat-item {
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 300;
+            color: white;
+        }
+
+        .stat-value.eaten { color: rgba(100,255,150,0.9); }
+        .stat-value.thrown { color: rgba(255,100,100,0.9); }
+
+        .stat-label {
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 4px;
+        }
+
+        /* היסטוריה */
+        .history-item {
+            background: rgba(255,255,255,0.05);
+            padding: 14px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-item.eaten {
+            border-right: 3px solid rgba(100,255,150,0.7);
+        }
+
+        .history-item.thrown {
+            border-right: 3px solid rgba(255,100,100,0.7);
+        }
+
+        .history-info {
+            flex: 1;
+        }
+
+        .history-name {
+            font-size: 15px;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .history-date {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 2px;
+        }
+
+        .history-price {
+            font-size: 16px;
+            font-weight: 400;
+        }
+
+        .history-price.eaten { color: rgba(100,255,150,0.9); }
+        .history-price.thrown { color: rgba(255,100,100,0.9); }
+
+        .export-btn {
+            width: 100%;
+            padding: 14px;
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.8);
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .export-btn:hover {
+            background: rgba(255,255,255,0.15);
         }
 
         /* Modal תמונה */
@@ -356,6 +498,15 @@
             min-height: 80px;
         }
 
+        .form-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
         .image-area {
             border: 1px dashed rgba(255,255,255,0.2);
             border-radius: 12px;
@@ -426,6 +577,88 @@
         .cancel-btn:hover {
             background: rgba(255,255,255,0.15);
         }
+
+        /* Modal סיום מוצר */
+        .dispose-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .dispose-modal.show { display: flex; }
+
+        .dispose-modal-content {
+            background: #1a1a2e;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            max-width: 320px;
+            width: 100%;
+        }
+
+        .dispose-modal-title {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .dispose-modal-subtitle {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 25px;
+        }
+
+        .dispose-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .dispose-btn {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dispose-btn.eaten {
+            background: rgba(100,255,150,0.2);
+            color: rgba(100,255,150,0.9);
+        }
+
+        .dispose-btn.eaten:hover {
+            background: rgba(100,255,150,0.3);
+        }
+
+        .dispose-btn.thrown {
+            background: rgba(255,100,100,0.2);
+            color: rgba(255,100,100,0.9);
+        }
+
+        .dispose-btn.thrown:hover {
+            background: rgba(255,100,100,0.3);
+        }
+
+        .dispose-cancel {
+            margin-top: 15px;
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+            padding: 10px;
+        }
     </style>
 </head>
 <body>
@@ -435,8 +668,37 @@
         </header>
         <div class="sync-status" id="syncStatus">LOADING</div>
 
-        <div class="products-list" id="list">
-            <div class="loading">Loading...</div>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('active')">מוצרים</button>
+            <button class="tab-btn" onclick="switchTab('history')">היסטוריה</button>
+        </div>
+
+        <div id="activeTab">
+            <div class="products-list" id="list">
+                <div class="loading">Loading...</div>
+            </div>
+        </div>
+
+        <div id="historyTab" style="display: none;">
+            <div class="stats-box">
+                <div class="stats-title">סיכום חודשי</div>
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <div class="stat-value eaten" id="eatenCount">0</div>
+                        <div class="stat-label">נאכלו</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value thrown" id="thrownCount">0</div>
+                        <div class="stat-label">נזרקו</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value thrown" id="thrownValue">₪0</div>
+                        <div class="stat-label">הפסד</div>
+                    </div>
+                </div>
+            </div>
+            <div id="historyList"></div>
+            <button class="export-btn" onclick="exportToExcel()">📊 ייצוא לאקסל</button>
         </div>
     </div>
 
@@ -461,16 +723,22 @@
                 <input type="text" id="name" placeholder="לדוגמה: חלב תנובה">
             </div>
 
-            <div class="form-group">
-                <label>קטגוריה</label>
-                <select id="category">
-                    <option value="dairy">🥛 חלבי</option>
-                    <option value="meat">🥩 בשרי</option>
-                    <option value="vegetables">🥬 ירקות ופירות</option>
-                    <option value="bread">🍞 לחם ומאפים</option>
-                    <option value="frozen">🧊 קפוא</option>
-                    <option value="other">📦 אחר</option>
-                </select>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>קטגוריה</label>
+                    <select id="category">
+                        <option value="dairy">🥛 חלבי</option>
+                        <option value="meat">🥩 בשרי</option>
+                        <option value="vegetables">🥬 ירקות ופירות</option>
+                        <option value="bread">🍞 לחם ומאפים</option>
+                        <option value="frozen">🧊 קפוא</option>
+                        <option value="other">📦 אחר</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>מחיר (₪)</label>
+                    <input type="number" id="price" placeholder="0" step="0.01" min="0">
+                </div>
             </div>
 
             <div class="form-group">
@@ -509,16 +777,22 @@
                 <input type="text" id="editName">
             </div>
 
-            <div class="form-group">
-                <label>קטגוריה</label>
-                <select id="editCategory">
-                    <option value="dairy">🥛 חלבי</option>
-                    <option value="meat">🥩 בשרי</option>
-                    <option value="vegetables">🥬 ירקות ופירות</option>
-                    <option value="bread">🍞 לחם ומאפים</option>
-                    <option value="frozen">🧊 קפוא</option>
-                    <option value="other">📦 אחר</option>
-                </select>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>קטגוריה</label>
+                    <select id="editCategory">
+                        <option value="dairy">🥛 חלבי</option>
+                        <option value="meat">🥩 בשרי</option>
+                        <option value="vegetables">🥬 ירקות ופירות</option>
+                        <option value="bread">🍞 לחם ומאפים</option>
+                        <option value="frozen">🧊 קפוא</option>
+                        <option value="other">📦 אחר</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>מחיר (₪)</label>
+                    <input type="number" id="editPrice" placeholder="0" step="0.01" min="0">
+                </div>
             </div>
 
             <div class="form-group">
@@ -538,11 +812,27 @@
         </div>
     </div>
 
+    <!-- Modal סיום מוצר -->
+    <div class="dispose-modal" id="disposeModal">
+        <div class="dispose-modal-content">
+            <div class="dispose-modal-title" id="disposeTitle">מה קרה למוצר?</div>
+            <div class="dispose-modal-subtitle" id="disposeSubtitle"></div>
+            <div class="dispose-buttons">
+                <button class="dispose-btn eaten" onclick="disposeProduct('eaten')">🍽️ נאכל</button>
+                <button class="dispose-btn thrown" onclick="disposeProduct('thrown')">🗑️ נזרק</button>
+            </div>
+            <button class="dispose-cancel" onclick="closeDisposeModal()">ביטול</button>
+        </div>
+    </div>
+
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycbyohF7wtGg8JP1GuNGUB39MY2xADikFI25lAQPqQDfE-O-gHxC21cR2O0gH0dzM1Qzb/exec';
         let products = [];
+        let history = JSON.parse(localStorage.getItem('foodHistory') || '[]');
         let currentImage = null;
         let editingProduct = null;
+        let disposingProduct = null;
+        let currentTab = 'active';
 
         const categories = {
             dairy: '🥛 חלבי',
@@ -589,6 +879,21 @@
             }
         };
 
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (tab === 'active') {
+                document.getElementById('activeTab').style.display = 'block';
+                document.getElementById('historyTab').style.display = 'none';
+            } else {
+                document.getElementById('activeTab').style.display = 'none';
+                document.getElementById('historyTab').style.display = 'block';
+                renderHistory();
+            }
+        }
+
         async function loadProducts() {
             try {
                 setStatus('SYNCING', 'syncing');
@@ -610,6 +915,7 @@
             document.getElementById('addModal').classList.remove('show');
             document.getElementById('name').value = '';
             document.getElementById('date').value = '';
+            document.getElementById('price').value = '';
             document.getElementById('notes').value = '';
             document.getElementById('imageArea').style.backgroundImage = '';
             document.getElementById('imageText').style.display = '';
@@ -620,6 +926,7 @@
             const name = document.getElementById('name').value.trim();
             const date = document.getElementById('date').value;
             const category = document.getElementById('category').value;
+            const price = document.getElementById('price').value || '0';
             const notes = document.getElementById('notes').value.trim();
 
             if (!name || !date) {
@@ -639,7 +946,7 @@
                     '&name=' + encodeURIComponent(name) +
                     '&date=' + date +
                     '&category=' + category +
-                    '&notes=' + encodeURIComponent(notes) +
+                    '&notes=' + encodeURIComponent(notes + '|price:' + price) +
                     '&image=' + encodeURIComponent(currentImage || '');
                 await fetch(url, { method: 'GET', mode: 'no-cors' });
 
@@ -654,16 +961,50 @@
             btn.textContent = 'הוסף מוצר';
         }
 
-        async function deleteProduct(id) {
-            if (!confirm('האם למחוק את המוצר?')) return;
+        function openDisposeModal(id) {
+            const product = products.find(p => String(p.id) === String(id));
+            if (!product) return;
 
-            setStatus('DELETING', 'syncing');
+            disposingProduct = product;
+            document.getElementById('disposeSubtitle').textContent = product.name;
+            document.getElementById('disposeModal').classList.add('show');
+        }
+
+        function closeDisposeModal() {
+            document.getElementById('disposeModal').classList.remove('show');
+            disposingProduct = null;
+        }
+
+        async function disposeProduct(status) {
+            if (!disposingProduct) return;
+
+            const price = parsePrice(disposingProduct.notes);
+
+            // הוספה להיסטוריה
+            history.push({
+                id: disposingProduct.id,
+                name: disposingProduct.name,
+                category: disposingProduct.category,
+                price: price,
+                status: status,
+                date: new Date().toISOString(),
+                expiryDate: disposingProduct.date
+            });
+            localStorage.setItem('foodHistory', JSON.stringify(history));
+
+            // מחיקה מהרשימה הפעילה
+            setStatus('DISPOSING', 'syncing');
             try {
-                await fetch(API_URL + '?action=delete&id=' + id);
+                await fetch(API_URL + '?action=delete&id=' + disposingProduct.id);
+                closeDisposeModal();
                 await loadProducts();
             } catch (error) {
                 setStatus('ERROR', 'error');
             }
+        }
+
+        async function deleteProduct(id) {
+            openDisposeModal(id);
         }
 
         function openEditModal(id) {
@@ -675,7 +1016,8 @@
             document.getElementById('editName').value = product.name;
             document.getElementById('editCategory').value = product.category || 'other';
             document.getElementById('editDate').value = product.date;
-            document.getElementById('editNotes').value = product.notes || '';
+            document.getElementById('editPrice').value = parsePrice(product.notes);
+            document.getElementById('editNotes').value = parseNotes(product.notes);
 
             document.getElementById('editModal').classList.add('show');
         }
@@ -690,6 +1032,7 @@
             const name = document.getElementById('editName').value.trim();
             const category = document.getElementById('editCategory').value;
             const date = document.getElementById('editDate').value;
+            const price = document.getElementById('editPrice').value || '0';
             const notes = document.getElementById('editNotes').value.trim();
 
             if (!name || !date) {
@@ -707,7 +1050,7 @@
                     '&name=' + encodeURIComponent(name) +
                     '&date=' + date +
                     '&category=' + category +
-                    '&notes=' + encodeURIComponent(notes) +
+                    '&notes=' + encodeURIComponent(notes + '|price:' + price) +
                     '&image=' + encodeURIComponent(image || '');
                 await fetch(url, { method: 'GET', mode: 'no-cors' });
 
@@ -717,6 +1060,17 @@
                 setStatus('ERROR', 'error');
                 console.error(error);
             }
+        }
+
+        function parsePrice(notes) {
+            if (!notes) return 0;
+            const match = notes.match(/\|price:(\d+\.?\d*)/);
+            return match ? parseFloat(match[1]) : 0;
+        }
+
+        function parseNotes(notes) {
+            if (!notes) return '';
+            return notes.replace(/\|price:\d+\.?\d*/, '').trim();
         }
 
         function openImageModal(imageSrc) {
@@ -777,7 +1131,10 @@
                     : '<div class="no-img">📦</div>';
 
                 const catName = categories[p.category] || categories['other'];
-                const notesHtml = p.notes ? `<div class="product-notes">${p.notes}</div>` : '';
+                const price = parsePrice(p.notes);
+                const notesText = parseNotes(p.notes);
+                const priceHtml = price > 0 ? `<div class="product-price">₪${price.toFixed(2)}</div>` : '';
+                const notesHtml = notesText ? `<div class="product-notes">${notesText}</div>` : '';
 
                 return `
                     <div class="product ${cls}">
@@ -786,16 +1143,86 @@
                             <div class="product-name">${p.name}</div>
                             <div class="product-category">${catName}</div>
                             <div class="product-meta">${dateStr}</div>
+                            ${priceHtml}
                             ${notesHtml}
                             ${status}
                         </div>
                         <div class="product-actions">
                             <button class="btn-action" onclick="openEditModal('${p.id}')" title="ערוך">✏️</button>
-                            <button class="btn-action delete" onclick="deleteProduct('${p.id}')" title="מחק">✕</button>
+                            <button class="btn-action delete" onclick="deleteProduct('${p.id}')" title="סיים">✓</button>
                         </div>
                     </div>
                 `;
             }).join('');
+        }
+
+        function renderHistory() {
+            const now = new Date();
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+            const monthHistory = history.filter(h => new Date(h.date) >= monthStart);
+
+            const eaten = monthHistory.filter(h => h.status === 'eaten');
+            const thrown = monthHistory.filter(h => h.status === 'thrown');
+            const thrownValue = thrown.reduce((sum, h) => sum + (h.price || 0), 0);
+
+            document.getElementById('eatenCount').textContent = eaten.length;
+            document.getElementById('thrownCount').textContent = thrown.length;
+            document.getElementById('thrownValue').textContent = '₪' + thrownValue.toFixed(2);
+
+            const listEl = document.getElementById('historyList');
+
+            if (monthHistory.length === 0) {
+                listEl.innerHTML = '<div class="empty">אין היסטוריה החודש</div>';
+                return;
+            }
+
+            // מיון מהחדש לישן
+            monthHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            listEl.innerHTML = monthHistory.map(h => {
+                const dateStr = new Date(h.date).toLocaleDateString('he-IL');
+                const statusClass = h.status === 'eaten' ? 'eaten' : 'thrown';
+                const statusIcon = h.status === 'eaten' ? '🍽️' : '🗑️';
+                const priceStr = h.price > 0 ? `₪${h.price.toFixed(2)}` : '';
+
+                return `
+                    <div class="history-item ${statusClass}">
+                        <div class="history-info">
+                            <div class="history-name">${statusIcon} ${h.name}</div>
+                            <div class="history-date">${dateStr}</div>
+                        </div>
+                        <div class="history-price ${statusClass}">${priceStr}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function exportToExcel() {
+            const now = new Date();
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            const monthHistory = history.filter(h => new Date(h.date) >= monthStart);
+
+            if (monthHistory.length === 0) {
+                alert('אין נתונים לייצוא');
+                return;
+            }
+
+            // יצירת CSV
+            let csv = 'שם,קטגוריה,מחיר,סטטוס,תאריך\n';
+            monthHistory.forEach(h => {
+                const status = h.status === 'eaten' ? 'נאכל' : 'נזרק';
+                const date = new Date(h.date).toLocaleDateString('he-IL');
+                const cat = categories[h.category] || 'אחר';
+                csv += `"${h.name}","${cat}",${h.price || 0},"${status}","${date}"\n`;
+            });
+
+            // הורדה
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `food-tracker-${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}.csv`;
+            link.click();
         }
 
         document.addEventListener('keydown', function(e) {
@@ -803,6 +1230,7 @@
                 closeImageModal();
                 closeEditModal();
                 closeAddModal();
+                closeDisposeModal();
             }
         });
     </script>
