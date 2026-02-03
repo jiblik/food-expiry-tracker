@@ -4,123 +4,178 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Food Expiry Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: Arial, sans-serif;
-            background: #f0f4f8;
+            font-family: 'Heebo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
 
         .container {
-            max-width: 500px;
+            max-width: 480px;
             margin: 0 auto;
         }
 
         header {
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 24px;
+            padding: 20px 0;
         }
 
         h1 {
-            color: #2c5282;
-            font-size: 1.5rem;
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 600;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
 
         .sync-status {
             text-align: center;
-            font-size: 12px;
-            color: #888;
-            margin-bottom: 15px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 20px;
+            font-weight: 300;
         }
 
-        .sync-status.syncing { color: #3182ce; }
-        .sync-status.error { color: #e53e3e; }
+        .sync-status.syncing { color: #ffd700; }
+        .sync-status.error { color: #ff6b6b; }
 
         /* טופס */
         .form-box {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            background: rgba(255,255,255,0.95);
+            padding: 24px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            margin-bottom: 24px;
+            backdrop-filter: blur(10px);
         }
 
         .form-box label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
         }
 
         .form-box input, .form-box select, .form-box textarea {
             width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+            border: 2px solid #eee;
+            border-radius: 12px;
             font-size: 16px;
             font-family: inherit;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        .form-box input:focus, .form-box select:focus, .form-box textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102,126,234,0.1);
         }
 
         .form-box textarea {
             resize: vertical;
-            min-height: 60px;
+            min-height: 70px;
         }
 
         .image-area {
-            border: 2px dashed #ccc;
-            border-radius: 8px;
-            padding: 30px;
+            border: 2px dashed #ddd;
+            border-radius: 12px;
+            padding: 32px;
             text-align: center;
             cursor: pointer;
-            margin-bottom: 15px;
+            margin-bottom: 16px;
             background-size: cover;
             background-position: center;
-            min-height: 120px;
+            min-height: 100px;
+            transition: all 0.3s ease;
+            color: #888;
         }
 
-        .image-area:hover { border-color: #2c5282; }
+        .image-area:hover {
+            border-color: #667eea;
+            background-color: rgba(102,126,234,0.05);
+        }
 
         #imageInput { display: none; }
 
         button {
             width: 100%;
-            padding: 14px;
-            background: #2c5282;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 16px;
+            font-weight: 500;
             cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
         }
 
-        button:hover { background: #1a365d; }
-        button:disabled { background: #a0aec0; cursor: not-allowed; }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102,126,234,0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
 
         /* רשימה */
         .product {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
+            background: rgba(255,255,255,0.95);
+            padding: 16px;
+            border-radius: 16px;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
-            gap: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            gap: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border-right: 4px solid transparent;
         }
 
-        .product.warning { border-right: 4px solid #f6ad55; background: #fffaf0; }
-        .product.danger { border-right: 4px solid #fc8181; background: #fff5f5; }
+        .product:hover {
+            transform: translateX(-4px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        }
+
+        .product.warning {
+            border-right-color: #f6ad55;
+            background: linear-gradient(to left, rgba(246,173,85,0.1), rgba(255,255,255,0.95));
+        }
+
+        .product.danger {
+            border-right-color: #fc8181;
+            background: linear-gradient(to left, rgba(252,129,129,0.1), rgba(255,255,255,0.95));
+        }
 
         .product img {
-            width: 50px;
-            height: 50px;
-            border-radius: 8px;
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
             object-fit: cover;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .product img:hover {
@@ -128,50 +183,116 @@
         }
 
         .product .no-img {
-            width: 50px;
-            height: 50px;
-            background: #e2e8f0;
-            border-radius: 8px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #eee 0%, #ddd 100%);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 24px;
         }
 
         .product-info { flex: 1; }
-        .product-name { font-weight: bold; margin-bottom: 2px; font-size: 15px; }
-        .product-meta { color: #666; font-size: 13px; }
-        .product-category { font-size: 11px; color: #888; }
-        .product-notes { font-size: 11px; color: #666; font-style: italic; margin-top: 3px; }
-        .product-status { font-size: 12px; font-weight: bold; margin-top: 2px; }
-        .product-status.warning { color: #c05621; }
-        .product-status.danger { color: #c53030; }
+
+        .product-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .product-meta {
+            color: #666;
+            font-size: 13px;
+            font-weight: 400;
+        }
+
+        .product-category {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 2px;
+        }
+
+        .product-notes {
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+            margin-top: 4px;
+            padding: 6px 10px;
+            background: rgba(0,0,0,0.03);
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .product-status {
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 4px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .product-status.warning {
+            color: #c05621;
+            background: rgba(246,173,85,0.2);
+        }
+
+        .product-status.danger {
+            color: #c53030;
+            background: rgba(252,129,129,0.2);
+        }
 
         .product-actions {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
         }
 
         .btn-action {
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 14px;
-            width: auto;
-            padding: 5px 8px;
-            border-radius: 4px;
-            color: #666;
+            font-size: 16px;
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border-radius: 10px;
+            color: #888;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
         }
 
-        .btn-action:hover { background: #f0f0f0; }
-        .btn-action.delete { color: #e53e3e; }
-        .btn-action.delete:hover { background: #ffe6e6; }
-        .btn-action.edit { color: #3182ce; }
-        .btn-action.edit:hover { background: #e6f0ff; }
+        .btn-action:hover {
+            background: #f0f0f0;
+            transform: scale(1.1);
+        }
 
-        .empty { text-align: center; color: #888; padding: 40px; }
-        .loading { text-align: center; color: #888; padding: 40px; }
+        .btn-action.delete:hover {
+            background: #ffe6e6;
+            color: #e53e3e;
+        }
+
+        .btn-action.edit:hover {
+            background: #e6f0ff;
+            color: #3182ce;
+        }
+
+        .empty {
+            text-align: center;
+            color: rgba(255,255,255,0.8);
+            padding: 60px 20px;
+            font-size: 16px;
+        }
+
+        .loading {
+            text-align: center;
+            color: rgba(255,255,255,0.8);
+            padding: 60px 20px;
+        }
 
         /* Modal תמונה מוגדלת */
         .image-modal {
@@ -181,11 +302,17 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.92);
             z-index: 1000;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .image-modal.show {
@@ -195,7 +322,8 @@
         .image-modal img {
             max-width: 100%;
             max-height: 90vh;
-            border-radius: 8px;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         }
 
         .image-modal-close {
@@ -204,11 +332,17 @@
             left: 20px;
             background: white;
             border: none;
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             font-size: 20px;
             cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: transform 0.2s ease;
+        }
+
+        .image-modal-close:hover {
+            transform: scale(1.1);
         }
 
         /* Modal עריכה */
@@ -219,11 +353,12 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.6);
             z-index: 1000;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            backdrop-filter: blur(4px);
         }
 
         .edit-modal.show {
@@ -232,40 +367,65 @@
 
         .edit-modal-content {
             background: white;
-            border-radius: 12px;
-            padding: 20px;
+            border-radius: 20px;
+            padding: 24px;
             width: 100%;
             max-width: 400px;
             max-height: 90vh;
             overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .edit-modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .edit-modal-header h2 {
-            font-size: 1.2rem;
-            color: #2c5282;
+            font-size: 1.3rem;
+            color: #333;
+            font-weight: 600;
         }
 
         .edit-modal-close {
-            background: none;
+            background: #f5f5f5;
             border: none;
-            font-size: 24px;
+            font-size: 20px;
             cursor: pointer;
-            color: #888;
-            width: auto;
+            color: #666;
+            width: 40px;
+            height: 40px;
             padding: 0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .edit-modal-close:hover {
+            background: #eee;
+            transform: scale(1.05);
         }
 
         .edit-modal-buttons {
             display: flex;
-            gap: 10px;
-            margin-top: 15px;
+            gap: 12px;
+            margin-top: 20px;
         }
 
         .edit-modal-buttons button {
@@ -273,12 +433,14 @@
         }
 
         .btn-cancel {
-            background: #e2e8f0;
-            color: #4a5568;
+            background: #f5f5f5;
+            color: #666;
         }
 
         .btn-cancel:hover {
-            background: #cbd5e0;
+            background: #eee;
+            box-shadow: none;
+            transform: none;
         }
     </style>
 </head>
@@ -287,11 +449,11 @@
         <header>
             <h1>🥩 Food Expiry Tracker</h1>
         </header>
-        <div class="sync-status" id="syncStatus">🔄 טוען...</div>
+        <div class="sync-status" id="syncStatus">טוען...</div>
 
         <div class="form-box">
             <label>שם המוצר</label>
-            <input type="text" id="name" placeholder="">
+            <input type="text" id="name" placeholder="לדוגמה: חלב תנובה">
 
             <label>קטגוריה</label>
             <select id="category">
@@ -311,14 +473,14 @@
 
             <label>תמונה (לא חובה)</label>
             <div class="image-area" id="imageArea" onclick="document.getElementById('imageInput').click()">
-                <span id="imageText">📷 לחץ לצילום</span>
+                <span id="imageText">📷 לחץ להוספת תמונה</span>
             </div>
             <input type="file" id="imageInput" accept="image/*" capture="environment">
 
-            <button type="button" id="addBtn" onclick="addProduct()">➕ הוסף מוצר</button>
+            <button type="button" id="addBtn" onclick="addProduct()">הוסף מוצר</button>
         </div>
 
-        <div id="list"><div class="loading">🔄 טוען מוצרים...</div></div>
+        <div id="list"><div class="loading">טוען מוצרים...</div></div>
     </div>
 
     <!-- Modal תמונה מוגדלת -->
@@ -331,7 +493,7 @@
     <div class="edit-modal" id="editModal">
         <div class="edit-modal-content">
             <div class="edit-modal-header">
-                <h2>✏️ עריכת מוצר</h2>
+                <h2>עריכת מוצר</h2>
                 <button class="edit-modal-close" onclick="closeEditModal()">✕</button>
             </div>
             <input type="hidden" id="editId">
@@ -357,7 +519,7 @@
 
             <div class="edit-modal-buttons">
                 <button class="btn-cancel" onclick="closeEditModal()">ביטול</button>
-                <button onclick="saveEdit()">💾 שמור</button>
+                <button onclick="saveEdit()">שמור שינויים</button>
             </div>
         </div>
     </div>
@@ -420,13 +582,13 @@
         // טעינת מוצרים מהשרת
         async function loadProducts() {
             try {
-                setStatus('🔄 טוען...', 'syncing');
+                setStatus('מסנכרן...', 'syncing');
                 const response = await fetch(API_URL + '?action=get');
                 products = await response.json();
                 render();
-                setStatus('✅ מסונכרן', '');
+                setStatus('מסונכרן ✓', '');
             } catch (error) {
-                setStatus('❌ שגיאה', 'error');
+                setStatus('שגיאת חיבור', 'error');
                 console.error(error);
             }
         }
@@ -445,8 +607,8 @@
 
             const btn = document.getElementById('addBtn');
             btn.disabled = true;
-            btn.textContent = '⏳ שומר...';
-            setStatus('🔄 שומר...', 'syncing');
+            btn.textContent = 'שומר...';
+            setStatus('שומר...', 'syncing');
 
             const id = Date.now().toString();
 
@@ -470,24 +632,24 @@
                 // המתנה קצרה ואז טעינה מחדש
                 setTimeout(loadProducts, 1500);
             } catch (error) {
-                setStatus('❌ שגיאה', 'error');
+                setStatus('שגיאה', 'error');
                 console.error(error);
             }
 
             btn.disabled = false;
-            btn.textContent = '➕ הוסף מוצר';
+            btn.textContent = 'הוסף מוצר';
         }
 
         // מחיקת מוצר
         async function deleteProduct(id) {
             if (!confirm('האם למחוק את המוצר?')) return;
 
-            setStatus('🔄 מוחק...', 'syncing');
+            setStatus('מוחק...', 'syncing');
             try {
                 await fetch(API_URL + '?action=delete&id=' + id);
                 await loadProducts();
             } catch (error) {
-                setStatus('❌ שגיאה', 'error');
+                setStatus('שגיאה', 'error');
             }
         }
 
@@ -525,7 +687,7 @@
                 return;
             }
 
-            setStatus('🔄 מעדכן...', 'syncing');
+            setStatus('מעדכן...', 'syncing');
 
             try {
                 // מחיקה ואז הוספה מחדש (כי אין פונקציית update בשרת)
@@ -543,7 +705,7 @@
                 closeEditModal();
                 setTimeout(loadProducts, 1500);
             } catch (error) {
-                setStatus('❌ שגיאה', 'error');
+                setStatus('שגיאה', 'error');
                 console.error(error);
             }
         }
@@ -580,7 +742,7 @@
             const list = document.getElementById('list');
 
             if (products.length === 0) {
-                list.innerHTML = '<div class="empty">אין מוצרים עדיין</div>';
+                list.innerHTML = '<div class="empty">אין מוצרים עדיין<br>הוסף את המוצר הראשון שלך</div>';
                 return;
             }
 
@@ -594,16 +756,16 @@
 
                 if (days < 0) {
                     cls = 'danger';
-                    status = '<div class="product-status danger">⚠️ פג תוקף!</div>';
+                    status = '<div class="product-status danger">פג תוקף</div>';
                 } else if (days === 0) {
                     cls = 'danger';
-                    status = '<div class="product-status danger">⚠️ פג היום!</div>';
+                    status = '<div class="product-status danger">פג היום</div>';
                 } else if (days === 1) {
                     cls = 'warning';
-                    status = '<div class="product-status warning">⏰ פג מחר!</div>';
+                    status = '<div class="product-status warning">פג מחר</div>';
                 } else if (days <= 3) {
                     cls = 'warning';
-                    status = `<div class="product-status warning">⏰ פג בעוד ${days} ימים</div>`;
+                    status = `<div class="product-status warning">פג בעוד ${days} ימים</div>`;
                 }
 
                 const dateStr = new Date(p.date).toLocaleDateString('he-IL');
@@ -612,7 +774,7 @@
                     : '<div class="no-img">📦</div>';
 
                 const catName = categories[p.category] || categories['other'];
-                const notesHtml = p.notes ? `<div class="product-notes">💬 ${p.notes}</div>` : '';
+                const notesHtml = p.notes ? `<div class="product-notes">${p.notes}</div>` : '';
 
                 return `
                     <div class="product ${cls}">
