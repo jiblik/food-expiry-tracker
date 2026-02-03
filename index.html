@@ -348,6 +348,41 @@
         .history-price.eaten { color: rgba(100,255,150,0.9); }
         .history-price.thrown { color: rgba(255,100,100,0.9); }
 
+        .history-actions {
+            display: flex;
+            gap: 6px;
+            margin-right: 10px;
+        }
+
+        .history-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .history-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .history-btn.restore:hover {
+            background: rgba(100,200,255,0.3);
+            color: #64c8ff;
+        }
+
+        .history-btn.delete:hover {
+            background: rgba(255,100,100,0.3);
+            color: #ff6464;
+        }
+
         .export-btn {
             width: 100%;
             padding: 14px;
@@ -692,7 +727,7 @@
                         <div class="stat-label">נזרקו</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-value thrown" id="thrownValue">₪0</div>
+                        <div class="stat-value thrown" id="thrownValue">€0</div>
                         <div class="stat-label">הפסד</div>
                     </div>
                 </div>
@@ -736,7 +771,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>מחיר (₪)</label>
+                    <label>מחיר (€)</label>
                     <input type="number" id="price" placeholder="0" step="0.01" min="0">
                 </div>
             </div>
@@ -790,7 +825,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>מחיר (₪)</label>
+                    <label>מחיר (€)</label>
                     <input type="number" id="editPrice" placeholder="0" step="0.01" min="0">
                 </div>
             </div>
@@ -1133,7 +1168,7 @@
                 const catName = categories[p.category] || categories['other'];
                 const price = parsePrice(p.notes);
                 const notesText = parseNotes(p.notes);
-                const priceHtml = price > 0 ? `<div class="product-price">₪${price.toFixed(2)}</div>` : '';
+                const priceHtml = price > 0 ? `<div class="product-price">€${price.toFixed(2)}</div>` : '';
                 const notesHtml = notesText ? `<div class="product-notes">${notesText}</div>` : '';
 
                 return `
@@ -1168,7 +1203,7 @@
 
             document.getElementById('eatenCount').textContent = eaten.length;
             document.getElementById('thrownCount').textContent = thrown.length;
-            document.getElementById('thrownValue').textContent = '₪' + thrownValue.toFixed(2);
+            document.getElementById('thrownValue').textContent = '€' + thrownValue.toFixed(2);
 
             const listEl = document.getElementById('historyList');
 
@@ -1180,11 +1215,12 @@
             // מיון מהחדש לישן
             monthHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-            listEl.innerHTML = monthHistory.map(h => {
+            listEl.innerHTML = monthHistory.map((h, index) => {
                 const dateStr = new Date(h.date).toLocaleDateString('he-IL');
                 const statusClass = h.status === 'eaten' ? 'eaten' : 'thrown';
                 const statusIcon = h.status === 'eaten' ? '🍽️' : '🗑️';
-                const priceStr = h.price > 0 ? `₪${h.price.toFixed(2)}` : '';
+                const priceStr = h.price > 0 ? `€${h.price.toFixed(2)}` : '';
+                const historyIndex = history.findIndex(item => item.id === h.id && item.date === h.date);
 
                 return `
                     <div class="history-item ${statusClass}">
@@ -1192,10 +1228,57 @@
                             <div class="history-name">${statusIcon} ${h.name}</div>
                             <div class="history-date">${dateStr}</div>
                         </div>
+                        <div class="history-actions">
+                            <button class="history-btn restore" onclick="restoreFromHistory(${historyIndex})" title="החזר למוצרים">↩️</button>
+                            <button class="history-btn delete" onclick="deleteFromHistory(${historyIndex})" title="מחק">✕</button>
+                        </div>
                         <div class="history-price ${statusClass}">${priceStr}</div>
                     </div>
                 `;
             }).join('');
+        }
+
+        async function restoreFromHistory(index) {
+            if (index < 0 || index >= history.length) return;
+
+            const item = history[index];
+            if (!confirm(`להחזיר את "${item.name}" לרשימת המוצרים?`)) return;
+
+            setStatus('RESTORING', 'syncing');
+
+            const id = Date.now().toString();
+            const notesWithPrice = item.price > 0 ? `|price:${item.price}` : '';
+
+            try {
+                const url = API_URL + '?action=add&id=' + id +
+                    '&name=' + encodeURIComponent(item.name) +
+                    '&date=' + item.expiryDate +
+                    '&category=' + (item.category || 'other') +
+                    '&notes=' + encodeURIComponent(notesWithPrice) +
+                    '&image=';
+                await fetch(url, { method: 'GET', mode: 'no-cors' });
+
+                // הסרה מההיסטוריה
+                history.splice(index, 1);
+                localStorage.setItem('foodHistory', JSON.stringify(history));
+
+                renderHistory();
+                setTimeout(loadProducts, 1500);
+            } catch (error) {
+                setStatus('ERROR', 'error');
+                console.error(error);
+            }
+        }
+
+        function deleteFromHistory(index) {
+            if (index < 0 || index >= history.length) return;
+
+            const item = history[index];
+            if (!confirm(`למחוק את "${item.name}" מההיסטוריה?`)) return;
+
+            history.splice(index, 1);
+            localStorage.setItem('foodHistory', JSON.stringify(history));
+            renderHistory();
         }
 
         function exportToExcel() {
