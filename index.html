@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מעקב תפוגה</title>
+    <title>Food Expiry Tracker</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -54,13 +54,19 @@
             font-weight: bold;
         }
 
-        .form-box input, .form-box select {
+        .form-box input, .form-box select, .form-box textarea {
             width: 100%;
             padding: 12px;
             margin-bottom: 15px;
             border: 1px solid #ddd;
             border-radius: 8px;
             font-size: 16px;
+            font-family: inherit;
+        }
+
+        .form-box textarea {
+            resize: vertical;
+            min-height: 60px;
         }
 
         .image-area {
@@ -113,6 +119,12 @@
             height: 50px;
             border-radius: 8px;
             object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .product img:hover {
+            transform: scale(1.1);
         }
 
         .product .no-img {
@@ -130,31 +142,150 @@
         .product-name { font-weight: bold; margin-bottom: 2px; font-size: 15px; }
         .product-meta { color: #666; font-size: 13px; }
         .product-category { font-size: 11px; color: #888; }
+        .product-notes { font-size: 11px; color: #666; font-style: italic; margin-top: 3px; }
         .product-status { font-size: 12px; font-weight: bold; margin-top: 2px; }
         .product-status.warning { color: #c05621; }
         .product-status.danger { color: #c53030; }
 
-        .btn-delete {
+        .product-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .btn-action {
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px;
             width: auto;
             padding: 5px 8px;
             border-radius: 4px;
-            color: #e53e3e;
+            color: #666;
         }
 
-        .btn-delete:hover { background: #ffe6e6; }
+        .btn-action:hover { background: #f0f0f0; }
+        .btn-action.delete { color: #e53e3e; }
+        .btn-action.delete:hover { background: #ffe6e6; }
+        .btn-action.edit { color: #3182ce; }
+        .btn-action.edit:hover { background: #e6f0ff; }
 
         .empty { text-align: center; color: #888; padding: 40px; }
         .loading { text-align: center; color: #888; padding: 40px; }
+
+        /* Modal תמונה מוגדלת */
+        .image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .image-modal.show {
+            display: flex;
+        }
+
+        .image-modal img {
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 8px;
+        }
+
+        .image-modal-close {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* Modal עריכה */
+        .edit-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .edit-modal.show {
+            display: flex;
+        }
+
+        .edit-modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .edit-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .edit-modal-header h2 {
+            font-size: 1.2rem;
+            color: #2c5282;
+        }
+
+        .edit-modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #888;
+            width: auto;
+            padding: 0;
+        }
+
+        .edit-modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .edit-modal-buttons button {
+            flex: 1;
+        }
+
+        .btn-cancel {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-cancel:hover {
+            background: #cbd5e0;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🍎 מעקב תפוגה</h1>
+            <h1>🥩 Food Expiry Tracker</h1>
         </header>
         <div class="sync-status" id="syncStatus">🔄 טוען...</div>
 
@@ -175,6 +306,9 @@
             <label>תאריך תפוגה</label>
             <input type="date" id="date">
 
+            <label>הערות (לא חובה)</label>
+            <textarea id="notes" placeholder="הוסף הערות..."></textarea>
+
             <label>תמונה (לא חובה)</label>
             <div class="image-area" id="imageArea" onclick="document.getElementById('imageInput').click()">
                 <span id="imageText">📷 לחץ לצילום</span>
@@ -187,10 +321,52 @@
         <div id="list"><div class="loading">🔄 טוען מוצרים...</div></div>
     </div>
 
+    <!-- Modal תמונה מוגדלת -->
+    <div class="image-modal" id="imageModal" onclick="closeImageModal()">
+        <button class="image-modal-close" onclick="closeImageModal()">✕</button>
+        <img id="imageModalImg" src="" alt="">
+    </div>
+
+    <!-- Modal עריכה -->
+    <div class="edit-modal" id="editModal">
+        <div class="edit-modal-content">
+            <div class="edit-modal-header">
+                <h2>✏️ עריכת מוצר</h2>
+                <button class="edit-modal-close" onclick="closeEditModal()">✕</button>
+            </div>
+            <input type="hidden" id="editId">
+
+            <label>שם המוצר</label>
+            <input type="text" id="editName">
+
+            <label>קטגוריה</label>
+            <select id="editCategory">
+                <option value="dairy">🥛 חלבי</option>
+                <option value="meat">🥩 בשרי</option>
+                <option value="vegetables">🥬 ירקות ופירות</option>
+                <option value="bread">🍞 לחם ומאפים</option>
+                <option value="frozen">🧊 קפוא</option>
+                <option value="other">📦 אחר</option>
+            </select>
+
+            <label>תאריך תפוגה</label>
+            <input type="date" id="editDate">
+
+            <label>הערות</label>
+            <textarea id="editNotes" placeholder="הוסף הערות..."></textarea>
+
+            <div class="edit-modal-buttons">
+                <button class="btn-cancel" onclick="closeEditModal()">ביטול</button>
+                <button onclick="saveEdit()">💾 שמור</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycbyohF7wtGg8JP1GuNGUB39MY2xADikFI25lAQPqQDfE-O-gHxC21cR2O0gH0dzM1Qzb/exec';
         let products = [];
         let currentImage = null;
+        let editingProduct = null;
 
         const categories = {
             dairy: '🥛 חלבי',
@@ -260,6 +436,7 @@
             const name = document.getElementById('name').value.trim();
             const date = document.getElementById('date').value;
             const category = document.getElementById('category').value;
+            const notes = document.getElementById('notes').value.trim();
 
             if (!name || !date) {
                 alert('נא למלא שם ותאריך');
@@ -274,12 +451,18 @@
             const id = Date.now().toString();
 
             try {
-                const url = API_URL + '?action=add&id=' + id + '&name=' + encodeURIComponent(name) + '&date=' + date + '&category=' + category + '&image=' + encodeURIComponent(currentImage || '');
+                const url = API_URL + '?action=add&id=' + id +
+                    '&name=' + encodeURIComponent(name) +
+                    '&date=' + date +
+                    '&category=' + category +
+                    '&notes=' + encodeURIComponent(notes) +
+                    '&image=' + encodeURIComponent(currentImage || '');
                 await fetch(url, { method: 'GET', mode: 'no-cors' });
 
                 // ניקוי
                 document.getElementById('name').value = '';
                 document.getElementById('date').value = '';
+                document.getElementById('notes').value = '';
                 document.getElementById('imageArea').style.backgroundImage = '';
                 document.getElementById('imageText').style.display = '';
                 currentImage = null;
@@ -297,6 +480,8 @@
 
         // מחיקת מוצר
         async function deleteProduct(id) {
+            if (!confirm('האם למחוק את המוצר?')) return;
+
             setStatus('🔄 מוחק...', 'syncing');
             try {
                 await fetch(API_URL + '?action=delete&id=' + id);
@@ -304,6 +489,74 @@
             } catch (error) {
                 setStatus('❌ שגיאה', 'error');
             }
+        }
+
+        // פתיחת modal עריכה
+        function openEditModal(id) {
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+
+            editingProduct = product;
+            document.getElementById('editId').value = product.id;
+            document.getElementById('editName').value = product.name;
+            document.getElementById('editCategory').value = product.category || 'other';
+            document.getElementById('editDate').value = product.date;
+            document.getElementById('editNotes').value = product.notes || '';
+
+            document.getElementById('editModal').classList.add('show');
+        }
+
+        // סגירת modal עריכה
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('show');
+            editingProduct = null;
+        }
+
+        // שמירת עריכה
+        async function saveEdit() {
+            const id = document.getElementById('editId').value;
+            const name = document.getElementById('editName').value.trim();
+            const category = document.getElementById('editCategory').value;
+            const date = document.getElementById('editDate').value;
+            const notes = document.getElementById('editNotes').value.trim();
+
+            if (!name || !date) {
+                alert('נא למלא שם ותאריך');
+                return;
+            }
+
+            setStatus('🔄 מעדכן...', 'syncing');
+
+            try {
+                // מחיקה ואז הוספה מחדש (כי אין פונקציית update בשרת)
+                await fetch(API_URL + '?action=delete&id=' + id);
+
+                const image = editingProduct ? editingProduct.image : '';
+                const url = API_URL + '?action=add&id=' + id +
+                    '&name=' + encodeURIComponent(name) +
+                    '&date=' + date +
+                    '&category=' + category +
+                    '&notes=' + encodeURIComponent(notes) +
+                    '&image=' + encodeURIComponent(image || '');
+                await fetch(url, { method: 'GET', mode: 'no-cors' });
+
+                closeEditModal();
+                setTimeout(loadProducts, 1500);
+            } catch (error) {
+                setStatus('❌ שגיאה', 'error');
+                console.error(error);
+            }
+        }
+
+        // פתיחת תמונה מוגדלת
+        function openImageModal(imageSrc) {
+            document.getElementById('imageModalImg').src = imageSrc;
+            document.getElementById('imageModal').classList.add('show');
+        }
+
+        // סגירת תמונה מוגדלת
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.remove('show');
         }
 
         // עדכון סטטוס
@@ -355,10 +608,11 @@
 
                 const dateStr = new Date(p.date).toLocaleDateString('he-IL');
                 const img = p.image
-                    ? `<img src="${p.image}" alt="">`
+                    ? `<img src="${p.image}" alt="" onclick="openImageModal('${p.image}')">`
                     : '<div class="no-img">📦</div>';
 
                 const catName = categories[p.category] || categories['other'];
+                const notesHtml = p.notes ? `<div class="product-notes">💬 ${p.notes}</div>` : '';
 
                 return `
                     <div class="product ${cls}">
@@ -367,13 +621,25 @@
                             <div class="product-name">${p.name}</div>
                             <div class="product-category">${catName}</div>
                             <div class="product-meta">תפוגה: ${dateStr}</div>
+                            ${notesHtml}
                             ${status}
                         </div>
-                        <button class="btn-delete" onclick="deleteProduct('${p.id}')" title="מחק">✕</button>
+                        <div class="product-actions">
+                            <button class="btn-action edit" onclick="openEditModal('${p.id}')" title="ערוך">✏️</button>
+                            <button class="btn-action delete" onclick="deleteProduct('${p.id}')" title="מחק">✕</button>
+                        </div>
                     </div>
                 `;
             }).join('');
         }
+
+        // סגירת modals עם ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeImageModal();
+                closeEditModal();
+            }
+        });
     </script>
 </body>
 </html>
