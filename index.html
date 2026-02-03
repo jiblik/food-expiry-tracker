@@ -863,7 +863,7 @@
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycbyohF7wtGg8JP1GuNGUB39MY2xADikFI25lAQPqQDfE-O-gHxC21cR2O0gH0dzM1Qzb/exec';
         let products = [];
-        let history = JSON.parse(localStorage.getItem('foodHistory') || '[]');
+        let history = [];
         let currentImage = null;
         let editingProduct = null;
         let disposingProduct = null;
@@ -879,7 +879,9 @@
         };
 
         loadProducts();
+        loadHistory();
         setInterval(loadProducts, 30000);
+        setInterval(loadHistory, 30000);
 
         document.getElementById('imageInput').onchange = function(e) {
             const file = e.target.files[0];
@@ -939,6 +941,18 @@
             } catch (error) {
                 setStatus('OFFLINE', 'error');
                 console.error(error);
+            }
+        }
+
+        async function loadHistory() {
+            try {
+                const response = await fetch(API_URL + '?action=getHistory');
+                history = await response.json();
+                if (currentTab === 'history') {
+                    renderHistory();
+                }
+            } catch (error) {
+                console.error('Error loading history:', error);
             }
         }
 
@@ -1014,25 +1028,28 @@
             if (!disposingProduct) return;
 
             const price = parsePrice(disposingProduct.notes);
+            const historyId = Date.now().toString();
+            const historyDate = new Date().toISOString();
 
-            // הוספה להיסטוריה
-            history.push({
-                id: disposingProduct.id,
-                name: disposingProduct.name,
-                category: disposingProduct.category,
-                price: price,
-                status: status,
-                date: new Date().toISOString(),
-                expiryDate: disposingProduct.date
-            });
-            localStorage.setItem('foodHistory', JSON.stringify(history));
-
-            // מחיקה מהרשימה הפעילה
             setStatus('DISPOSING', 'syncing');
+
             try {
+                // הוספה להיסטוריה בענן
+                const historyUrl = API_URL + '?action=addHistory' +
+                    '&id=' + historyId +
+                    '&name=' + encodeURIComponent(disposingProduct.name) +
+                    '&category=' + (disposingProduct.category || 'other') +
+                    '&price=' + price +
+                    '&status=' + status +
+                    '&date=' + encodeURIComponent(historyDate) +
+                    '&expiryDate=' + disposingProduct.date;
+                await fetch(historyUrl, { method: 'GET', mode: 'no-cors' });
+
+                // מחיקה מהרשימה הפעילה
                 await fetch(API_URL + '?action=delete&id=' + disposingProduct.id);
                 closeDisposeModal();
                 await loadProducts();
+                setTimeout(loadHistory, 1500);
             } catch (error) {
                 setStatus('ERROR', 'error');
             }
@@ -1199,7 +1216,7 @@
 
             const eaten = monthHistory.filter(h => h.status === 'eaten');
             const thrown = monthHistory.filter(h => h.status === 'thrown');
-            const thrownValue = thrown.reduce((sum, h) => sum + (h.price || 0), 0);
+            const thrownValue = thrown.reduce((sum, h) => sum + (parseFloat(h.price) || 0), 0);
 
             document.getElementById('eatenCount').textContent = eaten.length;
             document.getElementById('thrownCount').textContent = thrown.length;
@@ -1215,12 +1232,12 @@
             // מיון מהחדש לישן
             monthHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-            listEl.innerHTML = monthHistory.map((h, index) => {
+            listEl.innerHTML = monthHistory.map(h => {
                 const dateStr = new Date(h.date).toLocaleDateString('he-IL');
                 const statusClass = h.status === 'eaten' ? 'eaten' : 'thrown';
                 const statusIcon = h.status === 'eaten' ? '🍽️' : '🗑️';
-                const priceStr = h.price > 0 ? `€${h.price.toFixed(2)}` : '';
-                const historyIndex = history.findIndex(item => item.id === h.id && item.date === h.date);
+                const price = parseFloat(h.price) || 0;
+                const priceStr = price > 0 ? `€${price.toFixed(2)}` : '';
 
                 return `
                     <div class="history-item ${statusClass}">
@@ -1229,8 +1246,8 @@
                             <div class="history-date">${dateStr}</div>
                         </div>
                         <div class="history-actions">
-                            <button class="history-btn restore" onclick="restoreFromHistory(${historyIndex})" title="החזר למוצרים">↩️</button>
-                            <button class="history-btn delete" onclick="deleteFromHistory(${historyIndex})" title="מחק">✕</button>
+                            <button class="history-btn restore" onclick="restoreFromHistory('${h.id}')" title="החזר למוצרים">↩️</button>
+                            <button class="history-btn delete" onclick="deleteFromHistory('${h.id}')" title="מחק">✕</button>
                         </div>
                         <div class="history-price ${statusClass}">${priceStr}</div>
                     </div>
@@ -1238,10 +1255,10 @@
             }).join('');
         }
 
-        async function restoreFromHistory(index) {
-            if (index < 0 || index >= history.length) return;
+        async function restoreFromHistory(historyId) {
+            const item = history.find(h => String(h.id) === String(historyId));
+            if (!item) return;
 
-            const item = history[index];
             if (!confirm(`להחזיר את "${item.name}" לרשימת המוצרים?`)) return;
 
             setStatus('RESTORING', 'syncing');
@@ -1250,6 +1267,7 @@
             const notesWithPrice = item.price > 0 ? `|price:${item.price}` : '';
 
             try {
+                // הוספה למוצרים
                 const url = API_URL + '?action=add&id=' + id +
                     '&name=' + encodeURIComponent(item.name) +
                     '&date=' + item.expiryDate +
@@ -1258,27 +1276,34 @@
                     '&image=';
                 await fetch(url, { method: 'GET', mode: 'no-cors' });
 
-                // הסרה מההיסטוריה
-                history.splice(index, 1);
-                localStorage.setItem('foodHistory', JSON.stringify(history));
+                // מחיקה מההיסטוריה בענן
+                await fetch(API_URL + '?action=deleteHistory&id=' + historyId);
 
-                renderHistory();
-                setTimeout(loadProducts, 1500);
+                setTimeout(() => {
+                    loadHistory();
+                    loadProducts();
+                }, 1500);
             } catch (error) {
                 setStatus('ERROR', 'error');
                 console.error(error);
             }
         }
 
-        function deleteFromHistory(index) {
-            if (index < 0 || index >= history.length) return;
+        async function deleteFromHistory(historyId) {
+            const item = history.find(h => String(h.id) === String(historyId));
+            if (!item) return;
 
-            const item = history[index];
             if (!confirm(`למחוק את "${item.name}" מההיסטוריה?`)) return;
 
-            history.splice(index, 1);
-            localStorage.setItem('foodHistory', JSON.stringify(history));
-            renderHistory();
+            setStatus('DELETING', 'syncing');
+
+            try {
+                await fetch(API_URL + '?action=deleteHistory&id=' + historyId);
+                setTimeout(loadHistory, 1500);
+            } catch (error) {
+                setStatus('ERROR', 'error');
+                console.error(error);
+            }
         }
 
         function exportToExcel() {
@@ -1297,7 +1322,7 @@
                 const status = h.status === 'eaten' ? 'נאכל' : 'נזרק';
                 const date = new Date(h.date).toLocaleDateString('he-IL');
                 const cat = categories[h.category] || 'אחר';
-                csv += `"${h.name}","${cat}",${h.price || 0},"${status}","${date}"\n`;
+                csv += `"${h.name}","${cat}",${parseFloat(h.price) || 0},"${status}","${date}"\n`;
             });
 
             // הורדה
