@@ -4,375 +4,1377 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>מעקב תפוגה</title>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #22c55e;
+            --success-light: #dcfce7;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --orange: #f97316;
+            --orange-light: #ffedd5;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
-            font-family: Arial, sans-serif;
-            background: #f0f4f8;
+            font-family: 'Heebo', sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
             min-height: 100vh;
-            padding: 20px;
+            color: var(--gray-800);
+            line-height: 1.6;
         }
 
         .container {
-            max-width: 500px;
+            max-width: 600px;
             margin: 0 auto;
+            padding: 16px;
+            padding-bottom: 100px;
         }
 
-        header {
-            text-align: center;
-            margin-bottom: 15px;
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 24px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-lg);
         }
 
-        h1 {
-            color: #2c5282;
-            font-size: 1.5rem;
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .sync-status {
-            text-align: center;
-            font-size: 12px;
-            color: #888;
-            margin-bottom: 15px;
+        .header-subtitle {
+            opacity: 0.9;
+            font-size: 0.9rem;
         }
 
-        .sync-status.syncing { color: #3182ce; }
-        .sync-status.error { color: #e53e3e; }
-
-        /* טופס */
-        .form-box {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        /* Stats Bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
             margin-bottom: 20px;
         }
 
-        .form-box label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        .form-box input, .form-box select {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-
-        .image-area {
-            border: 2px dashed #ccc;
-            border-radius: 8px;
-            padding: 30px;
-            text-align: center;
-            cursor: pointer;
-            margin-bottom: 15px;
-            background-size: cover;
-            background-position: center;
-            min-height: 120px;
-        }
-
-        .image-area:hover { border-color: #2c5282; }
-
-        #imageInput { display: none; }
-
-        button {
-            width: 100%;
-            padding: 14px;
-            background: #2c5282;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        button:hover { background: #1a365d; }
-        button:disabled { background: #a0aec0; cursor: not-allowed; }
-
-        /* רשימה */
-        .product {
+        .stat-item {
             background: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
+            padding: 14px 10px;
+            border-radius: var(--radius-sm);
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--gray-500);
+            margin-top: 2px;
+        }
+
+        .stat-safe .stat-number { color: var(--success); }
+        .stat-warning .stat-number { color: var(--orange); }
+        .stat-danger .stat-number { color: var(--danger); }
+        .stat-total .stat-number { color: var(--primary); }
+
+        /* Alert Banner */
+        .alert-banner {
+            background: var(--danger-light);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .alert-banner.hidden {
+            display: none;
+        }
+
+        /* Filter Buttons */
+        .filter-section {
+            margin-bottom: 20px;
+        }
+
+        .filter-label {
+            font-size: 0.85rem;
+            color: var(--gray-600);
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid var(--gray-200);
+            background: white;
+            border-radius: 20px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--gray-600);
+        }
+
+        .filter-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .filter-btn.filter-danger.active {
+            background: var(--danger);
+            border-color: var(--danger);
+        }
+
+        .filter-btn.filter-safe.active {
+            background: var(--success);
+            border-color: var(--success);
+        }
+
+        .filter-btn.filter-expired.active {
+            background: var(--gray-600);
+            border-color: var(--gray-600);
+        }
+
+        /* Category Filter */
+        .category-filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .category-btn {
+            padding: 6px 12px;
+            border: 1px solid var(--gray-200);
+            background: white;
+            border-radius: 16px;
+            font-family: inherit;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .category-btn:hover {
+            background: var(--gray-50);
+        }
+
+        .category-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        /* Products List */
+        .products-list {
+            display: flex;
+            flex-direction: column;
             gap: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
-        .product.warning { border-right: 4px solid #f6ad55; background: #fffaf0; }
-        .product.danger { border-right: 4px solid #fc8181; background: #fff5f5; }
-
-        .product img {
-            width: 50px;
-            height: 50px;
-            border-radius: 8px;
-            object-fit: cover;
+        .product-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: var(--shadow);
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            transition: all 0.2s;
+            cursor: pointer;
+            border-right: 4px solid transparent;
         }
 
-        .product .no-img {
+        .product-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateX(-4px);
+        }
+
+        .product-card.status-safe {
+            border-right-color: var(--success);
+        }
+
+        .product-card.status-warning {
+            border-right-color: var(--warning);
+        }
+
+        .product-card.status-danger {
+            border-right-color: var(--orange);
+        }
+
+        .product-card.status-expired {
+            border-right-color: var(--danger);
+            background: var(--gray-50);
+        }
+
+        .product-icon {
             width: 50px;
             height: 50px;
-            background: #e2e8f0;
-            border-radius: 8px;
+            border-radius: var(--radius-sm);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 1.5rem;
+            flex-shrink: 0;
         }
 
-        .product-info { flex: 1; }
-        .product-name { font-weight: bold; margin-bottom: 2px; font-size: 15px; }
-        .product-meta { color: #666; font-size: 13px; }
-        .product-category { font-size: 11px; color: #888; }
-        .product-status { font-size: 12px; font-weight: bold; margin-top: 2px; }
-        .product-status.warning { color: #c05621; }
-        .product-status.danger { color: #c53030; }
+        .product-icon.cat-fruits { background: #fef3c7; }
+        .product-icon.cat-vegetables { background: #dcfce7; }
+        .product-icon.cat-dairy { background: #dbeafe; }
+        .product-icon.cat-frozen { background: #e0e7ff; }
+        .product-icon.cat-meat { background: #ffe4e6; }
+        .product-icon.cat-bread { background: #fef3c7; }
+        .product-icon.cat-other { background: var(--gray-100); }
+
+        .product-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .product-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 4px;
+            color: var(--gray-800);
+        }
+
+        .product-category {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+            margin-bottom: 6px;
+        }
+
+        .product-date {
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .product-notes {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        .days-badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .days-badge.safe {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .days-badge.warning {
+            background: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .days-badge.danger {
+            background: var(--orange-light);
+            color: var(--orange);
+        }
+
+        .days-badge.expired {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .product-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
 
         .btn-delete {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            width: auto;
-            padding: 5px 8px;
-            border-radius: 4px;
-            color: #e53e3e;
+            background: var(--gray-100);
+            color: var(--gray-500);
         }
 
-        .btn-delete:hover { background: #ffe6e6; }
+        .btn-delete:hover {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
 
-        .empty { text-align: center; color: #888; padding: 40px; }
-        .loading { text-align: center; color: #888; padding: 40px; }
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray-400);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 16px;
+        }
+
+        .empty-state-text {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .empty-state-sub {
+            font-size: 0.9rem;
+        }
+
+        /* FAB Button */
+        .fab {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            font-size: 1.75rem;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .fab:active {
+            transform: scale(0.95);
+        }
+
+        /* Settings Button */
+        .settings-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: white;
+            color: var(--gray-600);
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+            transition: all 0.2s;
+            z-index: 100;
+        }
+
+        .settings-btn:hover {
+            background: var(--gray-50);
+            color: var(--gray-800);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            padding: 16px;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: white;
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 450px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(20px);
+            transition: transform 0.3s;
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray-400);
+            padding: 4px;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--gray-600);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--gray-700);
+            font-size: 0.9rem;
+        }
+
+        .form-label .required {
+            color: var(--danger);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-input.error {
+            border-color: var(--danger);
+        }
+
+        .form-error {
+            color: var(--danger);
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+
+        .category-select {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .category-option {
+            padding: 12px 8px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .category-option:hover {
+            border-color: var(--primary);
+        }
+
+        .category-option.selected {
+            border-color: var(--primary);
+            background: #eff6ff;
+        }
+
+        .category-option-icon {
+            font-size: 1.5rem;
+            margin-bottom: 4px;
+        }
+
+        .category-option-label {
+            font-size: 0.8rem;
+            color: var(--gray-600);
+        }
+
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--gray-200);
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-700);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-200);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        /* Settings Modal */
+        .settings-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+
+        .settings-item-info h3 {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .settings-item-info p {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        /* Undo Toast */
+        .undo-toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--gray-800);
+            color: white;
+            padding: 14px 20px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .undo-toast.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .undo-toast button {
+            background: white;
+            color: var(--gray-800);
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-family: inherit;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .undo-toast button:hover {
+            background: var(--gray-100);
+        }
+
+        /* Confirm Dialog */
+        .confirm-dialog {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .confirm-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+
+        .confirm-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .confirm-message {
+            color: var(--gray-500);
+            margin-bottom: 24px;
+        }
+
+        .confirm-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .stats-bar {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .category-select {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .product-card {
+                padding: 14px;
+            }
+
+            .product-icon {
+                width: 44px;
+                height: 44px;
+                font-size: 1.3rem;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>🍎 מעקב תפוגה</h1>
+        <!-- Header -->
+        <header class="header">
+            <h1>🥗 מעקב תפוגה</h1>
+            <p class="header-subtitle">נהל את תאריכי התפוגה של המזון שלך</p>
         </header>
-        <div class="sync-status" id="syncStatus">🔄 טוען...</div>
 
-        <div class="form-box">
-            <label>שם המוצר</label>
-            <input type="text" id="name" placeholder="">
-
-            <label>קטגוריה</label>
-            <select id="category">
-                <option value="dairy">🥛 חלבי</option>
-                <option value="meat">🥩 בשרי</option>
-                <option value="vegetables">🥬 ירקות ופירות</option>
-                <option value="bread">🍞 לחם ומאפים</option>
-                <option value="frozen">🧊 קפוא</option>
-                <option value="other">📦 אחר</option>
-            </select>
-
-            <label>תאריך תפוגה</label>
-            <input type="date" id="date">
-
-            <label>תמונה (לא חובה)</label>
-            <div class="image-area" id="imageArea" onclick="document.getElementById('imageInput').click()">
-                <span id="imageText">📷 לחץ לצילום</span>
-            </div>
-            <input type="file" id="imageInput" accept="image/*" capture="environment">
-
-            <button type="button" id="addBtn" onclick="addProduct()">➕ הוסף מוצר</button>
+        <!-- Alert Banner -->
+        <div class="alert-banner hidden" id="alertBanner">
+            <span>⚠️</span>
+            <span id="alertText"></span>
         </div>
 
-        <div id="list"><div class="loading">🔄 טוען מוצרים...</div></div>
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-item stat-total">
+                <div class="stat-number" id="statTotal">0</div>
+                <div class="stat-label">סה"כ</div>
+            </div>
+            <div class="stat-item stat-safe">
+                <div class="stat-number" id="statSafe">0</div>
+                <div class="stat-label">בטוח</div>
+            </div>
+            <div class="stat-item stat-warning">
+                <div class="stat-number" id="statWarning">0</div>
+                <div class="stat-label">בסכנה</div>
+            </div>
+            <div class="stat-item stat-danger">
+                <div class="stat-number" id="statExpired">0</div>
+                <div class="stat-label">פג תוקף</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-section">
+            <div class="filter-label">סינון לפי מצב:</div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">הכל</button>
+                <button class="filter-btn filter-safe" data-filter="safe">בטוח</button>
+                <button class="filter-btn filter-danger" data-filter="danger">בסכנה</button>
+                <button class="filter-btn filter-expired" data-filter="expired">פג תוקף</button>
+            </div>
+            <div class="category-filters">
+                <button class="category-btn active" data-category="all">🍽️ הכל</button>
+                <button class="category-btn" data-category="fruits">🍎 פירות</button>
+                <button class="category-btn" data-category="vegetables">🥬 ירקות</button>
+                <button class="category-btn" data-category="dairy">🥛 חלב</button>
+                <button class="category-btn" data-category="meat">🥩 בשר</button>
+                <button class="category-btn" data-category="frozen">🧊 קפואים</button>
+                <button class="category-btn" data-category="bread">🍞 לחם</button>
+                <button class="category-btn" data-category="other">📦 אחר</button>
+            </div>
+        </div>
+
+        <!-- Products List -->
+        <div class="products-list" id="productsList"></div>
+    </div>
+
+    <!-- FAB Button -->
+    <button class="fab" id="addBtn" title="הוסף פריט">+</button>
+
+    <!-- Settings Button -->
+    <button class="settings-btn" id="settingsBtn" title="הגדרות">⚙️</button>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal-overlay" id="productModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">הוספת פריט</h2>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="productId">
+
+                <div class="form-group">
+                    <label class="form-label">שם המזון <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="productName" placeholder="לדוגמה: חלב תנובה">
+                    <div class="form-error" id="nameError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">קטגוריה <span class="required">*</span></label>
+                    <div class="category-select" id="categorySelect">
+                        <div class="category-option" data-value="fruits">
+                            <div class="category-option-icon">🍎</div>
+                            <div class="category-option-label">פירות</div>
+                        </div>
+                        <div class="category-option" data-value="vegetables">
+                            <div class="category-option-icon">🥬</div>
+                            <div class="category-option-label">ירקות</div>
+                        </div>
+                        <div class="category-option" data-value="dairy">
+                            <div class="category-option-icon">🥛</div>
+                            <div class="category-option-label">חלב</div>
+                        </div>
+                        <div class="category-option" data-value="meat">
+                            <div class="category-option-icon">🥩</div>
+                            <div class="category-option-label">בשר</div>
+                        </div>
+                        <div class="category-option" data-value="frozen">
+                            <div class="category-option-icon">🧊</div>
+                            <div class="category-option-label">קפואים</div>
+                        </div>
+                        <div class="category-option" data-value="bread">
+                            <div class="category-option-icon">🍞</div>
+                            <div class="category-option-label">לחם</div>
+                        </div>
+                        <div class="category-option" data-value="other">
+                            <div class="category-option-icon">📦</div>
+                            <div class="category-option-label">אחר</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">תאריך תפוגה <span class="required">*</span></label>
+                    <input type="date" class="form-input" id="productDate">
+                    <div class="form-error" id="dateError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">הערות</label>
+                    <input type="text" class="form-input" id="productNotes" placeholder="הערות אופציונליות">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelBtn">ביטול</button>
+                <button class="btn btn-primary" id="saveBtn">שמור</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">הגדרות</h2>
+                <button class="modal-close" id="settingsClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-item">
+                    <div class="settings-item-info">
+                        <h3>ייצוא נתונים</h3>
+                        <p>הורד את כל הנתונים כקובץ JSON</p>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" id="exportBtn">ייצוא</button>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-item-info">
+                        <h3>ייבוא נתונים</h3>
+                        <p>טען נתונים מקובץ JSON</p>
+                    </div>
+                    <input type="file" id="importInput" accept=".json" style="display: none;">
+                    <button class="btn btn-secondary btn-sm" id="importBtn">ייבוא</button>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-item-info">
+                        <h3>מחיקת כל הנתונים</h3>
+                        <p>פעולה זו אינה ניתנת לביטול</p>
+                    </div>
+                    <button class="btn btn-danger btn-sm" id="clearBtn">מחק הכל</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Dialog -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal" style="max-width: 350px;">
+            <div class="confirm-dialog">
+                <div class="confirm-icon" id="confirmIcon">🗑️</div>
+                <div class="confirm-title" id="confirmTitle">האם למחוק?</div>
+                <div class="confirm-message" id="confirmMessage">פעולה זו אינה ניתנת לביטול</div>
+                <div class="confirm-buttons">
+                    <button class="btn btn-secondary" id="confirmCancel">ביטול</button>
+                    <button class="btn btn-danger" id="confirmOk">מחק</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Undo Toast -->
+    <div class="undo-toast" id="undoToast">
+        <span id="undoText">הפריט נמחק</span>
+        <button id="undoBtn">ביטול</button>
     </div>
 
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyohF7wtGg8JP1GuNGUB39MY2xADikFI25lAQPqQDfE-O-gHxC21cR2O0gH0dzM1Qzb/exec';
-        let products = [];
-        let currentImage = null;
+        // Data & State
+        let products = JSON.parse(localStorage.getItem('foodProducts')) || [];
+        let currentFilter = 'all';
+        let currentCategory = 'all';
+        let editingId = null;
+        let selectedCategory = null;
+        let deletedProduct = null;
+        let undoTimeout = null;
+        let confirmCallback = null;
 
+        // Category data
         const categories = {
-            dairy: '🥛 חלבי',
-            meat: '🥩 בשרי',
-            vegetables: '🥬 ירקות ופירות',
-            bread: '🍞 לחם ומאפים',
-            frozen: '🧊 קפוא',
-            other: '📦 אחר'
+            fruits: { icon: '🍎', label: 'פירות' },
+            vegetables: { icon: '🥬', label: 'ירקות' },
+            dairy: { icon: '🥛', label: 'חלב' },
+            meat: { icon: '🥩', label: 'בשר' },
+            frozen: { icon: '🧊', label: 'קפואים' },
+            bread: { icon: '🍞', label: 'לחם' },
+            other: { icon: '📦', label: 'אחר' }
         };
 
-        // טעינה ראשונית
-        loadProducts();
+        // DOM Elements
+        const productsList = document.getElementById('productsList');
+        const productModal = document.getElementById('productModal');
+        const settingsModal = document.getElementById('settingsModal');
+        const confirmModal = document.getElementById('confirmModal');
+        const alertBanner = document.getElementById('alertBanner');
+        const alertText = document.getElementById('alertText');
+        const undoToast = document.getElementById('undoToast');
 
-        // סנכרון אוטומטי כל 30 שניות
-        setInterval(loadProducts, 30000);
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProducts();
+            updateStats();
+            checkAlerts();
+            setupEventListeners();
+        });
 
-        // תמונה - עם הקטנה
-        document.getElementById('imageInput').onchange = function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const maxSize = 200;
-                    let width = img.width;
-                    let height = img.height;
+        function setupEventListeners() {
+            // Add button
+            document.getElementById('addBtn').addEventListener('click', () => openProductModal());
 
-                    if (width > height) {
-                        if (width > maxSize) {
-                            height *= maxSize / width;
-                            width = maxSize;
-                        }
-                    } else {
-                        if (height > maxSize) {
-                            width *= maxSize / height;
-                            height = maxSize;
-                        }
+            // Modal close
+            document.getElementById('modalClose').addEventListener('click', closeProductModal);
+            document.getElementById('cancelBtn').addEventListener('click', closeProductModal);
+            productModal.addEventListener('click', (e) => {
+                if (e.target === productModal) closeProductModal();
+            });
+
+            // Save product
+            document.getElementById('saveBtn').addEventListener('click', saveProduct);
+
+            // Category selection in form
+            document.querySelectorAll('#categorySelect .category-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    document.querySelectorAll('#categorySelect .category-option').forEach(o => o.classList.remove('selected'));
+                    option.classList.add('selected');
+                    selectedCategory = option.dataset.value;
+                });
+            });
+
+            // Filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.dataset.filter;
+                    renderProducts();
+                });
+            });
+
+            // Category filter buttons
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentCategory = btn.dataset.category;
+                    renderProducts();
+                });
+            });
+
+            // Settings
+            document.getElementById('settingsBtn').addEventListener('click', () => {
+                settingsModal.classList.add('active');
+            });
+            document.getElementById('settingsClose').addEventListener('click', () => {
+                settingsModal.classList.remove('active');
+            });
+            settingsModal.addEventListener('click', (e) => {
+                if (e.target === settingsModal) settingsModal.classList.remove('active');
+            });
+
+            // Export
+            document.getElementById('exportBtn').addEventListener('click', exportData);
+
+            // Import
+            document.getElementById('importBtn').addEventListener('click', () => {
+                document.getElementById('importInput').click();
+            });
+            document.getElementById('importInput').addEventListener('change', importData);
+
+            // Clear all
+            document.getElementById('clearBtn').addEventListener('click', () => {
+                showConfirm('🗑️', 'מחיקת כל הנתונים', 'האם אתה בטוח? פעולה זו אינה ניתנת לביטול', () => {
+                    products = [];
+                    saveToStorage();
+                    renderProducts();
+                    updateStats();
+                    checkAlerts();
+                    settingsModal.classList.remove('active');
+                });
+            });
+
+            // Confirm modal
+            document.getElementById('confirmCancel').addEventListener('click', () => {
+                confirmModal.classList.remove('active');
+            });
+            document.getElementById('confirmOk').addEventListener('click', () => {
+                confirmModal.classList.remove('active');
+                if (confirmCallback) confirmCallback();
+            });
+            confirmModal.addEventListener('click', (e) => {
+                if (e.target === confirmModal) confirmModal.classList.remove('active');
+            });
+
+            // Undo
+            document.getElementById('undoBtn').addEventListener('click', undoDelete);
+        }
+
+        function openProductModal(product = null) {
+            editingId = product ? product.id : null;
+            document.getElementById('modalTitle').textContent = product ? 'עריכת פריט' : 'הוספת פריט';
+            document.getElementById('productId').value = editingId || '';
+            document.getElementById('productName').value = product ? product.name : '';
+            document.getElementById('productDate').value = product ? product.date : '';
+            document.getElementById('productNotes').value = product ? product.notes || '' : '';
+
+            // Reset category selection
+            document.querySelectorAll('#categorySelect .category-option').forEach(o => o.classList.remove('selected'));
+            selectedCategory = product ? product.category : null;
+            if (selectedCategory) {
+                document.querySelector(`#categorySelect .category-option[data-value="${selectedCategory}"]`)?.classList.add('selected');
+            }
+
+            // Clear errors
+            document.getElementById('nameError').textContent = '';
+            document.getElementById('dateError').textContent = '';
+            document.getElementById('productName').classList.remove('error');
+            document.getElementById('productDate').classList.remove('error');
+
+            productModal.classList.add('active');
+            setTimeout(() => document.getElementById('productName').focus(), 100);
+        }
+
+        function closeProductModal() {
+            productModal.classList.remove('active');
+            editingId = null;
+            selectedCategory = null;
+        }
+
+        function saveProduct() {
+            const name = document.getElementById('productName').value.trim();
+            const date = document.getElementById('productDate').value;
+            const notes = document.getElementById('productNotes').value.trim();
+
+            // Validation
+            let valid = true;
+
+            if (!name) {
+                document.getElementById('nameError').textContent = 'שדה חובה';
+                document.getElementById('productName').classList.add('error');
+                valid = false;
+            } else {
+                document.getElementById('nameError').textContent = '';
+                document.getElementById('productName').classList.remove('error');
+            }
+
+            if (!date) {
+                document.getElementById('dateError').textContent = 'שדה חובה';
+                document.getElementById('productDate').classList.add('error');
+                valid = false;
+            } else {
+                document.getElementById('dateError').textContent = '';
+                document.getElementById('productDate').classList.remove('error');
+            }
+
+            if (!selectedCategory) {
+                valid = false;
+                alert('יש לבחור קטגוריה');
+            }
+
+            if (!valid) return;
+
+            const product = {
+                id: editingId || Date.now().toString(),
+                name,
+                category: selectedCategory,
+                date,
+                notes
+            };
+
+            if (editingId) {
+                const index = products.findIndex(p => p.id === editingId);
+                if (index !== -1) products[index] = product;
+            } else {
+                // Check for duplicates
+                const duplicate = products.find(p =>
+                    p.name.toLowerCase() === name.toLowerCase() &&
+                    p.date === date
+                );
+                if (duplicate) {
+                    if (!confirm('פריט עם שם ותאריך זהים כבר קיים. להוסיף בכל זאת?')) {
+                        return;
                     }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                    currentImage = canvas.toDataURL('image/jpeg', 0.5);
-                    document.getElementById('imageArea').style.backgroundImage = `url(${currentImage})`;
-                    document.getElementById('imageText').style.display = 'none';
-                };
-                img.src = URL.createObjectURL(file);
-            }
-        };
-
-        // טעינת מוצרים מהשרת
-        async function loadProducts() {
-            try {
-                setStatus('🔄 טוען...', 'syncing');
-                const response = await fetch(API_URL + '?action=get');
-                products = await response.json();
-                render();
-                setStatus('✅ מסונכרן', '');
-            } catch (error) {
-                setStatus('❌ שגיאה', 'error');
-                console.error(error);
-            }
-        }
-
-        // הוספת מוצר
-        async function addProduct() {
-            const name = document.getElementById('name').value.trim();
-            const date = document.getElementById('date').value;
-            const category = document.getElementById('category').value;
-
-            if (!name || !date) {
-                alert('נא למלא שם ותאריך');
-                return;
-            }
-
-            const btn = document.getElementById('addBtn');
-            btn.disabled = true;
-            btn.textContent = '⏳ שומר...';
-            setStatus('🔄 שומר...', 'syncing');
-
-            const id = Date.now().toString();
-
-            try {
-                const url = API_URL + '?action=add&id=' + id + '&name=' + encodeURIComponent(name) + '&date=' + date + '&category=' + category + '&image=' + encodeURIComponent(currentImage || '');
-                await fetch(url, { method: 'GET', mode: 'no-cors' });
-
-                // ניקוי
-                document.getElementById('name').value = '';
-                document.getElementById('date').value = '';
-                document.getElementById('imageArea').style.backgroundImage = '';
-                document.getElementById('imageText').style.display = '';
-                currentImage = null;
-
-                // המתנה קצרה ואז טעינה מחדש
-                setTimeout(loadProducts, 1500);
-            } catch (error) {
-                setStatus('❌ שגיאה', 'error');
-                console.error(error);
-            }
-
-            btn.disabled = false;
-            btn.textContent = '➕ הוסף מוצר';
-        }
-
-        // מחיקת מוצר
-        async function deleteProduct(id) {
-            setStatus('🔄 מוחק...', 'syncing');
-            try {
-                await fetch(API_URL + '?action=delete&id=' + id);
-                await loadProducts();
-            } catch (error) {
-                setStatus('❌ שגיאה', 'error');
-            }
-        }
-
-        // עדכון סטטוס
-        function setStatus(text, className) {
-            const el = document.getElementById('syncStatus');
-            el.textContent = text;
-            el.className = 'sync-status ' + className;
-        }
-
-        // חישוב ימים
-        function getDays(date) {
-            const today = new Date();
-            today.setHours(0,0,0,0);
-            const exp = new Date(date);
-            exp.setHours(0,0,0,0);
-            return Math.ceil((exp - today) / (1000 * 60 * 60 * 24));
-        }
-
-        // תצוגה
-        function render() {
-            const list = document.getElementById('list');
-
-            if (products.length === 0) {
-                list.innerHTML = '<div class="empty">אין מוצרים עדיין</div>';
-                return;
-            }
-
-            // מיון לפי תאריך
-            products.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-            list.innerHTML = products.map(p => {
-                const days = getDays(p.date);
-                let cls = '';
-                let status = '';
-
-                if (days < 0) {
-                    cls = 'danger';
-                    status = '<div class="product-status danger">⚠️ פג תוקף!</div>';
-                } else if (days === 0) {
-                    cls = 'danger';
-                    status = '<div class="product-status danger">⚠️ פג היום!</div>';
-                } else if (days === 1) {
-                    cls = 'warning';
-                    status = '<div class="product-status warning">⏰ פג מחר!</div>';
-                } else if (days <= 3) {
-                    cls = 'warning';
-                    status = `<div class="product-status warning">⏰ פג בעוד ${days} ימים</div>`;
                 }
+                products.push(product);
+            }
 
-                const dateStr = new Date(p.date).toLocaleDateString('he-IL');
-                const img = p.image
-                    ? `<img src="${p.image}" alt="">`
-                    : '<div class="no-img">📦</div>';
+            saveToStorage();
+            renderProducts();
+            updateStats();
+            checkAlerts();
+            closeProductModal();
+        }
 
-                const catName = categories[p.category] || categories['other'];
+        function deleteProduct(id, e) {
+            e.stopPropagation();
+            const product = products.find(p => p.id === id);
+
+            showConfirm('🗑️', `למחוק את "${product.name}"?`, 'ניתן לבטל את הפעולה', () => {
+                deletedProduct = {...product};
+                products = products.filter(p => p.id !== id);
+                saveToStorage();
+                renderProducts();
+                updateStats();
+                checkAlerts();
+                showUndoToast();
+            });
+        }
+
+        function showConfirm(icon, title, message, callback) {
+            document.getElementById('confirmIcon').textContent = icon;
+            document.getElementById('confirmTitle').textContent = title;
+            document.getElementById('confirmMessage').textContent = message;
+            confirmCallback = callback;
+            confirmModal.classList.add('active');
+        }
+
+        function showUndoToast() {
+            clearTimeout(undoTimeout);
+            document.getElementById('undoText').textContent = `"${deletedProduct.name}" נמחק`;
+            undoToast.classList.add('active');
+            undoTimeout = setTimeout(() => {
+                undoToast.classList.remove('active');
+                deletedProduct = null;
+            }, 5000);
+        }
+
+        function undoDelete() {
+            if (deletedProduct) {
+                products.push(deletedProduct);
+                saveToStorage();
+                renderProducts();
+                updateStats();
+                checkAlerts();
+                deletedProduct = null;
+            }
+            clearTimeout(undoTimeout);
+            undoToast.classList.remove('active');
+        }
+
+        function getProductStatus(dateStr) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const expiry = new Date(dateStr);
+            expiry.setHours(0, 0, 0, 0);
+            const diff = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+
+            if (diff < 0) return { status: 'expired', days: diff, label: 'פג תוקף' };
+            if (diff === 0) return { status: 'expired', days: 0, label: 'היום!' };
+            if (diff <= 3) return { status: 'danger', days: diff, label: `${diff} ימים` };
+            if (diff <= 7) return { status: 'warning', days: diff, label: `${diff} ימים` };
+            return { status: 'safe', days: diff, label: `${diff} ימים` };
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        function renderProducts() {
+            let filtered = [...products];
+
+            // Filter by status
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(p => {
+                    const status = getProductStatus(p.date).status;
+                    if (currentFilter === 'safe') return status === 'safe';
+                    if (currentFilter === 'danger') return status === 'danger' || status === 'warning';
+                    if (currentFilter === 'expired') return status === 'expired';
+                    return true;
+                });
+            }
+
+            // Filter by category
+            if (currentCategory !== 'all') {
+                filtered = filtered.filter(p => p.category === currentCategory);
+            }
+
+            // Sort by expiry date
+            filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            if (filtered.length === 0) {
+                productsList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🥗</div>
+                        <div class="empty-state-text">${products.length === 0 ? 'אין פריטים עדיין' : 'אין פריטים תואמים'}</div>
+                        <div class="empty-state-sub">${products.length === 0 ? 'לחץ על + כדי להוסיף פריט ראשון' : 'נסה לשנות את הסינון'}</div>
+                    </div>
+                `;
+                return;
+            }
+
+            productsList.innerHTML = filtered.map(product => {
+                const cat = categories[product.category] || categories.other;
+                const status = getProductStatus(product.date);
 
                 return `
-                    <div class="product ${cls}">
-                        ${img}
+                    <div class="product-card status-${status.status}" onclick="openProductModal(products.find(p => p.id === '${product.id}'))">
+                        <div class="product-icon cat-${product.category}">${cat.icon}</div>
                         <div class="product-info">
-                            <div class="product-name">${p.name}</div>
-                            <div class="product-category">${catName}</div>
-                            <div class="product-meta">תפוגה: ${dateStr}</div>
-                            ${status}
+                            <div class="product-name">${escapeHtml(product.name)}</div>
+                            <div class="product-category">${cat.label}</div>
+                            <div class="product-date">
+                                <span>📅 ${formatDate(product.date)}</span>
+                                <span class="days-badge ${status.status}">${status.label}</span>
+                            </div>
+                            ${product.notes ? `<div class="product-notes">💬 ${escapeHtml(product.notes)}</div>` : ''}
                         </div>
-                        <button class="btn-delete" onclick="deleteProduct('${p.id}')" title="מחק">✕</button>
+                        <div class="product-actions">
+                            <button class="btn-icon btn-delete" onclick="deleteProduct('${product.id}', event)" title="מחק">🗑️</button>
+                        </div>
                     </div>
                 `;
             }).join('');
+        }
+
+        function updateStats() {
+            let safe = 0, warning = 0, expired = 0;
+
+            products.forEach(p => {
+                const status = getProductStatus(p.date).status;
+                if (status === 'safe') safe++;
+                else if (status === 'warning' || status === 'danger') warning++;
+                else if (status === 'expired') expired++;
+            });
+
+            document.getElementById('statTotal').textContent = products.length;
+            document.getElementById('statSafe').textContent = safe;
+            document.getElementById('statWarning').textContent = warning;
+            document.getElementById('statExpired').textContent = expired;
+        }
+
+        function checkAlerts() {
+            const expired = products.filter(p => getProductStatus(p.date).status === 'expired').length;
+
+            if (expired > 0) {
+                alertText.textContent = `יש ${expired} פריטים שפג תוקפם!`;
+                alertBanner.classList.remove('hidden');
+            } else {
+                alertBanner.classList.add('hidden');
+            }
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('foodProducts', JSON.stringify(products));
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(products, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `food-tracker-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const imported = JSON.parse(event.target.result);
+                    if (Array.isArray(imported)) {
+                        products = imported;
+                        saveToStorage();
+                        renderProducts();
+                        updateStats();
+                        checkAlerts();
+                        settingsModal.classList.remove('active');
+                        alert('הנתונים יובאו בהצלחה!');
+                    } else {
+                        alert('קובץ לא תקין');
+                    }
+                } catch (err) {
+                    alert('שגיאה בקריאת הקובץ');
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
     </script>
 </body>
