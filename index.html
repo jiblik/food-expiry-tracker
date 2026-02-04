@@ -400,6 +400,45 @@
             background: rgba(255,255,255,0.15);
         }
 
+        /* מיון */
+        .sort-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .sort-btn {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 8px 14px;
+            border-radius: 20px;
+            color: rgba(255,255,255,0.6);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .sort-btn:hover {
+            background: rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.8);
+        }
+
+        .sort-btn.active {
+            background: rgba(233,69,96,0.3);
+            border-color: rgba(233,69,96,0.5);
+            color: white;
+        }
+
+        .sort-btn .arrow {
+            font-size: 10px;
+            opacity: 0.7;
+        }
+
         /* Modal תמונה */
         .image-modal {
             display: none;
@@ -709,6 +748,20 @@
         </div>
 
         <div id="activeTab">
+            <div class="sort-bar">
+                <button class="sort-btn active" onclick="changeSort('date')" id="sort-date">
+                    📅 תאריך <span class="arrow">▲</span>
+                </button>
+                <button class="sort-btn" onclick="changeSort('name')" id="sort-name">
+                    🔤 שם <span class="arrow"></span>
+                </button>
+                <button class="sort-btn" onclick="changeSort('price')" id="sort-price">
+                    💰 מחיר <span class="arrow"></span>
+                </button>
+                <button class="sort-btn" onclick="changeSort('category')" id="sort-category">
+                    📁 קטגוריה <span class="arrow"></span>
+                </button>
+            </div>
             <div class="products-list" id="list">
                 <div class="loading">Loading...</div>
             </div>
@@ -868,6 +921,8 @@
         let editingProduct = null;
         let disposingProduct = null;
         let currentTab = 'active';
+        let currentSort = 'date';
+        let sortDirection = 'asc'; // asc = ascending, desc = descending
 
         const categories = {
             dairy: '🥛 חלבי',
@@ -1148,6 +1203,55 @@
             return Math.ceil((exp - today) / (1000 * 60 * 60 * 24));
         }
 
+        function changeSort(sortType) {
+            // אם לוחצים על אותו כפתור - שנה כיוון
+            if (currentSort === sortType) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort = sortType;
+                sortDirection = 'asc';
+            }
+
+            // עדכון UI של כפתורים
+            document.querySelectorAll('.sort-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.querySelector('.arrow').textContent = '';
+            });
+
+            const activeBtn = document.getElementById('sort-' + sortType);
+            activeBtn.classList.add('active');
+            activeBtn.querySelector('.arrow').textContent = sortDirection === 'asc' ? '▲' : '▼';
+
+            render();
+        }
+
+        function sortProducts(productsToSort) {
+            return [...productsToSort].sort((a, b) => {
+                let comparison = 0;
+
+                switch (currentSort) {
+                    case 'date':
+                        comparison = new Date(a.date) - new Date(b.date);
+                        break;
+                    case 'name':
+                        comparison = a.name.localeCompare(b.name, 'he');
+                        break;
+                    case 'price':
+                        const priceA = parsePrice(a.notes);
+                        const priceB = parsePrice(b.notes);
+                        comparison = priceA - priceB;
+                        break;
+                    case 'category':
+                        const catA = categories[a.category] || categories['other'];
+                        const catB = categories[b.category] || categories['other'];
+                        comparison = catA.localeCompare(catB, 'he');
+                        break;
+                }
+
+                return sortDirection === 'asc' ? comparison : -comparison;
+            });
+        }
+
         function render() {
             const list = document.getElementById('list');
 
@@ -1156,9 +1260,9 @@
                 return;
             }
 
-            products.sort((a, b) => new Date(a.date) - new Date(b.date));
+            const sortedProducts = sortProducts(products);
 
-            list.innerHTML = products.map(p => {
+            list.innerHTML = sortedProducts.map(p => {
                 const days = getDays(p.date);
                 let cls = '';
                 let status = '';
