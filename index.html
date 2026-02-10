@@ -9,7 +9,7 @@
     <title>מעקב תפוגה</title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%231a1a2e'/><text x='96' y='130' font-size='100' text-anchor='middle'>🍎</text></svg>">
-    <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -489,39 +489,26 @@
             flex: 1;
             position: relative;
             overflow: hidden;
+            background: #000;
         }
 
         #scanner-container video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+        }
+
+        /* עיצוב ל-html5-qrcode */
+        #scanner-container #qr-shaded-region {
+            border-color: rgba(233,69,96,0.8) !important;
         }
 
         .scanner-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 280px;
-            height: 150px;
-            border: 3px solid rgba(233,69,96,0.8);
-            border-radius: 12px;
-            box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
+            display: none;
         }
 
         .scanner-line {
-            position: absolute;
-            top: 0;
-            left: 10px;
-            right: 10px;
-            height: 2px;
-            background: #e94560;
-            animation: scan 2s linear infinite;
-        }
-
-        @keyframes scan {
-            0%, 100% { top: 10px; }
-            50% { top: calc(100% - 10px); }
+            display: none;
         }
 
         .scanner-status {
@@ -1747,7 +1734,9 @@
             }
         });
 
-        // סורק ברקוד
+        // סורק ברקוד - גרסה משופרת
+        let html5QrCode = null;
+
         function openScanner() {
             document.getElementById('scannerModal').classList.add('show');
             document.getElementById('scannerStatus').textContent = 'מאתחל מצלמה...';
@@ -1759,73 +1748,126 @@
             stopScanner();
         }
 
-        function startScanner() {
+        async function startScanner() {
             if (scannerActive) return;
             scannerActive = true;
 
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: document.querySelector("#scanner-container"),
-                    constraints: {
-                        facingMode: "environment",
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    }
-                },
-                decoder: {
-                    readers: ["ean_reader", "ean_8_reader", "upc_reader", "upc_e_reader"]
-                },
-                locate: true
-            }, function(err) {
-                if (err) {
-                    console.error(err);
-                    document.getElementById('scannerStatus').textContent = 'שגיאה בהפעלת המצלמה';
-                    return;
-                }
-                Quagga.start();
+            try {
+                html5QrCode = new Html5Qrcode("scanner-container");
+
+                await html5QrCode.start(
+                    { facingMode: "environment" },
+                    {
+                        fps: 15,
+                        qrbox: { width: 280, height: 150 },
+                        aspectRatio: 1.777
+                    },
+                    onBarcodeDetected,
+                    () => {} // ignore errors
+                );
+
                 document.getElementById('scannerStatus').textContent = 'כוון את המצלמה לברקוד';
-            });
-
-            Quagga.onDetected(onBarcodeDetected);
+            } catch (err) {
+                console.error('Scanner error:', err);
+                document.getElementById('scannerStatus').textContent = 'שגיאה בהפעלת המצלמה. נסה שוב.';
+                scannerActive = false;
+            }
         }
 
-        function stopScanner() {
-            if (!scannerActive) return;
+        async function stopScanner() {
+            if (!scannerActive || !html5QrCode) return;
             scannerActive = false;
-            Quagga.offDetected(onBarcodeDetected);
-            Quagga.stop();
-        }
-
-        async function onBarcodeDetected(result) {
-            const code = result.codeResult.code;
-            document.getElementById('scannerStatus').textContent = 'נמצא: ' + code + ' - מחפש מוצר...';
-
-            // עצור סריקה כדי למנוע כפילויות
-            stopScanner();
 
             try {
-                // חיפוש במאגר Open Food Facts
-                const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json`);
-                const data = await response.json();
+                await html5QrCode.stop();
+                html5QrCode.clear();
+            } catch (err) {
+                console.error('Stop scanner error:', err);
+            }
+        }
+
+        // מילון תרגום קטגוריות לעברית
+        const categoryTranslations = {
+            'milk': 'חלב', 'cheese': 'גבינה', 'yogurt': 'יוגורט', 'butter': 'חמאה',
+            'cream': 'שמנת', 'eggs': 'ביצים', 'meat': 'בשר', 'chicken': 'עוף',
+            'beef': 'בקר', 'fish': 'דג', 'bread': 'לחם', 'pasta': 'פסטה',
+            'rice': 'אורז', 'cereal': 'דגני בוקר', 'juice': 'מיץ', 'water': 'מים',
+            'soda': 'משקה מוגז', 'coffee': 'קפה', 'tea': 'תה', 'chocolate': 'שוקולד',
+            'cookies': 'עוגיות', 'snack': 'חטיף', 'chips': 'צ\'יפס', 'sauce': 'רוטב',
+            'oil': 'שמן', 'sugar': 'סוכר', 'salt': 'מלח', 'spice': 'תבלין',
+            'vegetable': 'ירקות', 'fruit': 'פירות', 'frozen': 'קפוא', 'ice cream': 'גלידה'
+        };
+
+        // תרגום שם מוצר לעברית
+        function translateToHebrew(englishName) {
+            if (!englishName) return '';
+
+            // אם כבר בעברית, החזר כמו שזה
+            if (/[\u0590-\u05FF]/.test(englishName)) {
+                return englishName;
+            }
+
+            let hebrewName = englishName.toLowerCase();
+
+            // החלף מילים נפוצות
+            for (const [eng, heb] of Object.entries(categoryTranslations)) {
+                const regex = new RegExp(`\\b${eng}s?\\b`, 'gi');
+                hebrewName = hebrewName.replace(regex, heb);
+            }
+
+            // אם לא תורגם כלום, החזר את המקור
+            if (hebrewName === englishName.toLowerCase()) {
+                return englishName;
+            }
+
+            // הפוך לאותיות גדולות בהתחלה
+            return hebrewName.charAt(0).toUpperCase() + hebrewName.slice(1);
+        }
+
+        async function onBarcodeDetected(code) {
+            document.getElementById('scannerStatus').textContent = 'נמצא: ' + code + ' - מחפש מוצר...';
+
+            // עצור סריקה
+            await stopScanner();
+
+            try {
+                // חיפוש במאגר Open Food Facts - קודם בעברית
+                let response = await fetch(`https://he.openfoodfacts.org/api/v0/product/${code}.json`);
+                let data = await response.json();
+
+                // אם לא נמצא בעברית, נסה באנגלית
+                if (data.status !== 1) {
+                    response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json`);
+                    data = await response.json();
+                }
 
                 if (data.status === 1 && data.product) {
                     const product = data.product;
-                    const name = product.product_name_he || product.product_name || 'מוצר לא ידוע';
+
+                    // העדפה לשם בעברית
+                    let name = product.product_name_he ||
+                               product.product_name_il ||
+                               translateToHebrew(product.product_name) ||
+                               product.product_name ||
+                               'מוצר לא ידוע';
 
                     // זיהוי קטגוריה
                     let category = 'other';
-                    const cats = (product.categories || '').toLowerCase();
-                    if (cats.includes('dairy') || cats.includes('milk') || cats.includes('cheese') || cats.includes('חלב')) {
+                    const cats = (product.categories || product.categories_tags?.join(' ') || '').toLowerCase();
+
+                    if (cats.includes('dairy') || cats.includes('milk') || cats.includes('cheese') ||
+                        cats.includes('yogurt') || cats.includes('חלב') || cats.includes('גבינה')) {
                         category = 'dairy';
-                    } else if (cats.includes('meat') || cats.includes('בשר')) {
+                    } else if (cats.includes('meat') || cats.includes('chicken') || cats.includes('beef') ||
+                               cats.includes('בשר') || cats.includes('עוף')) {
                         category = 'meat';
-                    } else if (cats.includes('vegetable') || cats.includes('fruit') || cats.includes('ירק') || cats.includes('פרי')) {
+                    } else if (cats.includes('vegetable') || cats.includes('fruit') || cats.includes('fresh') ||
+                               cats.includes('ירק') || cats.includes('פרי')) {
                         category = 'vegetables';
-                    } else if (cats.includes('bread') || cats.includes('לחם') || cats.includes('bakery')) {
+                    } else if (cats.includes('bread') || cats.includes('bakery') || cats.includes('pastry') ||
+                               cats.includes('לחם') || cats.includes('מאפה')) {
                         category = 'bread';
-                    } else if (cats.includes('frozen') || cats.includes('קפוא')) {
+                    } else if (cats.includes('frozen') || cats.includes('ice') || cats.includes('קפוא')) {
                         category = 'frozen';
                     }
 
@@ -1834,8 +1876,8 @@
                     document.getElementById('category').value = category;
 
                     // תמונה אם יש
-                    if (product.image_url) {
-                        currentImage = product.image_thumb_url || product.image_small_url || null;
+                    if (product.image_front_small_url || product.image_url) {
+                        currentImage = product.image_front_small_url || product.image_small_url || null;
                         if (currentImage) {
                             document.getElementById('imageArea').style.backgroundImage = `url(${currentImage})`;
                             document.getElementById('imageText').style.display = 'none';
@@ -1843,7 +1885,7 @@
                     }
 
                     closeScanner();
-                    document.getElementById('scannerStatus').textContent = 'נמצא: ' + name;
+                    alert(`✅ נמצא: ${name}`);
                 } else {
                     document.getElementById('scannerStatus').textContent = 'מוצר לא נמצא במאגר. נסה שוב או הזן ידנית.';
                     setTimeout(() => {
