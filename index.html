@@ -769,6 +769,129 @@
             background: rgba(255,255,255,0.15);
         }
 
+        /* רשימת קניות */
+        .shopping-list {
+            margin-top: 20px;
+        }
+
+        .shopping-item {
+            background: rgba(255,255,255,0.05);
+            padding: 14px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .shopping-item.checked {
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
+
+        .shopping-item-name {
+            flex: 1;
+            font-size: 15px;
+        }
+
+        .shopping-item-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .shopping-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .shopping-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .add-shopping-btn {
+            width: 100%;
+            padding: 14px;
+            background: rgba(100,200,255,0.2);
+            border: 1px dashed rgba(100,200,255,0.4);
+            color: rgba(100,200,255,0.9);
+            border-radius: 12px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .add-shopping-btn:hover {
+            background: rgba(100,200,255,0.3);
+        }
+
+        .frequent-products {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+        }
+
+        .frequent-title {
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 12px;
+        }
+
+        .frequent-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .frequent-item {
+            background: rgba(255,255,255,0.1);
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            border: none;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .frequent-item:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* התראות */
+        .notification-banner {
+            background: rgba(233,69,96,0.2);
+            border: 1px solid rgba(233,69,96,0.4);
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+
+        .notification-banner:hover {
+            background: rgba(233,69,96,0.3);
+        }
+
+        .notification-text {
+            font-size: 14px;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .notification-icon {
+            font-size: 18px;
+        }
+
         /* Modal סיום מוצר */
         .dispose-modal {
             display: none;
@@ -862,9 +985,14 @@
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('active')">מוצרים</button>
             <button class="tab-btn" onclick="switchTab('history')">היסטוריה</button>
+            <button class="tab-btn" onclick="switchTab('shopping')">🛒 קניות</button>
         </div>
 
         <div id="activeTab">
+            <div class="notification-banner" id="notificationBanner" style="display: none;" onclick="requestNotifications()">
+                <span class="notification-text">🔔 הפעל התראות כדי לקבל עדכונים על מוצרים שעומדים לפוג</span>
+                <span class="notification-icon">→</span>
+            </div>
             <div class="sort-bar">
                 <button class="sort-btn active" onclick="changeSort('date')" id="sort-date">
                     📅 תאריך <span class="arrow">▲</span>
@@ -905,6 +1033,16 @@
             <div id="historyList"></div>
             <button class="export-btn" onclick="exportToExcel()">📊 ייצוא לאקסל</button>
         </div>
+
+        <div id="shoppingTab" style="display: none;">
+            <div class="shopping-list" id="shoppingList"></div>
+            <button class="add-shopping-btn" onclick="openAddShoppingModal()">+ הוסף פריט לרשימה</button>
+
+            <div class="frequent-products" id="frequentProducts">
+                <div class="frequent-title">🔥 מוצרים שקנית בעבר</div>
+                <div class="frequent-items" id="frequentItems"></div>
+            </div>
+        </div>
     </div>
 
     <button class="add-btn" onclick="openAddModal()">+</button>
@@ -913,6 +1051,20 @@
     <div class="image-modal" id="imageModal" onclick="closeImageModal()">
         <button class="image-modal-close" onclick="closeImageModal()">✕</button>
         <img id="imageModalImg" src="" alt="">
+    </div>
+
+    <!-- Modal הוספת פריט לקניות -->
+    <div class="dispose-modal" id="addShoppingModal">
+        <div class="dispose-modal-content">
+            <div class="dispose-modal-title">הוסף לרשימת קניות</div>
+            <div class="form-group" style="margin: 20px 0;">
+                <input type="text" id="shoppingItemName" placeholder="שם הפריט" style="width:100%; padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.1); color:white;">
+            </div>
+            <div class="dispose-buttons">
+                <button class="dispose-btn eaten" onclick="addShoppingItem()">הוסף</button>
+            </div>
+            <button class="dispose-cancel" onclick="closeAddShoppingModal()">ביטול</button>
+        </div>
     </div>
 
     <!-- Modal הוספה -->
@@ -1052,6 +1204,7 @@
         const API_URL = 'https://script.google.com/macros/s/AKfycbyohF7wtGg8JP1GuNGUB39MY2xADikFI25lAQPqQDfE-O-gHxC21cR2O0gH0dzM1Qzb/exec';
         let products = [];
         let history = [];
+        let shoppingList = JSON.parse(localStorage.getItem('shoppingList') || '[]');
         let currentImage = null;
         let editingProduct = null;
         let disposingProduct = null;
@@ -1113,13 +1266,18 @@
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
 
+            document.getElementById('activeTab').style.display = 'none';
+            document.getElementById('historyTab').style.display = 'none';
+            document.getElementById('shoppingTab').style.display = 'none';
+
             if (tab === 'active') {
                 document.getElementById('activeTab').style.display = 'block';
-                document.getElementById('historyTab').style.display = 'none';
-            } else {
-                document.getElementById('activeTab').style.display = 'none';
+            } else if (tab === 'history') {
                 document.getElementById('historyTab').style.display = 'block';
                 renderHistory();
+            } else if (tab === 'shopping') {
+                document.getElementById('shoppingTab').style.display = 'block';
+                renderShoppingList();
             }
         }
 
@@ -1242,6 +1400,11 @@
                 closeDisposeModal();
                 await loadProducts();
                 setTimeout(loadHistory, 1500);
+
+                // הצע להוסיף לרשימת קניות
+                setTimeout(() => {
+                    suggestAddToShopping(disposingProduct.name);
+                }, 500);
             } catch (error) {
                 setStatus('ERROR', 'error');
             }
@@ -1701,6 +1864,149 @@
             navigator.serviceWorker.register('sw.js')
                 .then(reg => console.log('SW registered'))
                 .catch(err => console.log('SW registration failed:', err));
+        }
+
+        // ========== התראות ==========
+        function checkNotificationSupport() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                document.getElementById('notificationBanner').style.display = 'flex';
+            }
+        }
+
+        async function requestNotifications() {
+            if (!('Notification' in window)) {
+                alert('הדפדפן שלך לא תומך בהתראות');
+                return;
+            }
+
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                document.getElementById('notificationBanner').style.display = 'none';
+                checkExpiringProducts();
+            }
+        }
+
+        function checkExpiringProducts() {
+            if (Notification.permission !== 'granted') return;
+
+            const expiringSoon = products.filter(p => {
+                const days = getDays(p.date);
+                return days >= 0 && days <= 3;
+            });
+
+            if (expiringSoon.length > 0) {
+                const names = expiringSoon.slice(0, 3).map(p => p.name).join(', ');
+                const more = expiringSoon.length > 3 ? ` ועוד ${expiringSoon.length - 3}` : '';
+
+                new Notification('⚠️ מוצרים עומדים לפוג!', {
+                    body: `${names}${more}`,
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🍎</text></svg>',
+                    tag: 'expiry-warning'
+                });
+            }
+        }
+
+        // בדיקת התראות בטעינה
+        setTimeout(checkNotificationSupport, 2000);
+
+        // ========== רשימת קניות ==========
+        function renderShoppingList() {
+            const listEl = document.getElementById('shoppingList');
+
+            if (shoppingList.length === 0) {
+                listEl.innerHTML = '<div class="empty">רשימת הקניות ריקה</div>';
+            } else {
+                listEl.innerHTML = shoppingList.map((item, index) => `
+                    <div class="shopping-item ${item.checked ? 'checked' : ''}">
+                        <span class="shopping-item-name">${item.name}</span>
+                        <div class="shopping-item-actions">
+                            <button class="shopping-btn" onclick="toggleShoppingItem(${index})">${item.checked ? '↩️' : '✓'}</button>
+                            <button class="shopping-btn" onclick="removeShoppingItem(${index})">✕</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // מוצרים תכופים מההיסטוריה
+            renderFrequentProducts();
+        }
+
+        function renderFrequentProducts() {
+            const frequentEl = document.getElementById('frequentItems');
+
+            // ספור מוצרים מההיסטוריה
+            const productCounts = {};
+            history.forEach(h => {
+                productCounts[h.name] = (productCounts[h.name] || 0) + 1;
+            });
+
+            // מיין לפי תדירות ולקח 8 הראשונים
+            const frequent = Object.entries(productCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 8)
+                .map(([name]) => name);
+
+            if (frequent.length === 0) {
+                document.getElementById('frequentProducts').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('frequentProducts').style.display = 'block';
+            frequentEl.innerHTML = frequent.map(name => `
+                <button class="frequent-item" onclick="addFrequentToShopping('${name}')">${name}</button>
+            `).join('');
+        }
+
+        function addFrequentToShopping(name) {
+            if (!shoppingList.find(item => item.name === name)) {
+                shoppingList.push({ name, checked: false });
+                saveShoppingList();
+                renderShoppingList();
+            }
+        }
+
+        function openAddShoppingModal() {
+            document.getElementById('addShoppingModal').classList.add('show');
+            document.getElementById('shoppingItemName').value = '';
+            document.getElementById('shoppingItemName').focus();
+        }
+
+        function closeAddShoppingModal() {
+            document.getElementById('addShoppingModal').classList.remove('show');
+        }
+
+        function addShoppingItem() {
+            const name = document.getElementById('shoppingItemName').value.trim();
+            if (!name) return;
+
+            shoppingList.push({ name, checked: false });
+            saveShoppingList();
+            closeAddShoppingModal();
+            renderShoppingList();
+        }
+
+        function toggleShoppingItem(index) {
+            shoppingList[index].checked = !shoppingList[index].checked;
+            saveShoppingList();
+            renderShoppingList();
+        }
+
+        function removeShoppingItem(index) {
+            shoppingList.splice(index, 1);
+            saveShoppingList();
+            renderShoppingList();
+        }
+
+        function saveShoppingList() {
+            localStorage.setItem('shoppingList', JSON.stringify(shoppingList));
+        }
+
+        // הצעה להוסיף לרשימת קניות כשמוצר נגמר
+        function suggestAddToShopping(productName) {
+            if (confirm(`להוסיף "${productName}" לרשימת הקניות?`)) {
+                shoppingList.push({ name: productName, checked: false });
+                saveShoppingList();
+            }
         }
     </script>
 </body>
