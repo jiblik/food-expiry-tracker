@@ -965,6 +965,153 @@
             opacity: 0.8;
         }
 
+        /* הגדרות API */
+        .settings-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .settings-input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            color: white;
+            font-size: 13px;
+            margin-bottom: 10px;
+            direction: ltr;
+        }
+
+        .settings-input::placeholder {
+            color: rgba(255,255,255,0.3);
+        }
+
+        .settings-input:focus {
+            outline: none;
+            border-color: rgba(233,69,96,0.5);
+        }
+
+        .settings-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .settings-btn.save {
+            background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
+            color: white;
+        }
+
+        .settings-btn.reset {
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.7);
+        }
+
+        .settings-help {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.6;
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+        }
+
+        .settings-help a {
+            color: rgba(100,200,255,0.9);
+            text-decoration: none;
+        }
+
+        .api-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+
+        .api-status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .api-status-dot.connected { background: rgba(100,255,150,0.9); }
+        .api-status-dot.disconnected { background: rgba(255,100,100,0.9); }
+
+        /* מסך התחברות */
+        .setup-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            z-index: 2000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .setup-screen.show { display: block; }
+
+        .setup-content {
+            max-width: 400px;
+            margin: 0 auto;
+            padding-top: 40px;
+        }
+
+        .setup-logo {
+            text-align: center;
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .setup-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+
+        .setup-subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 30px;
+        }
+
+        .setup-option {
+            background: rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .setup-option:hover {
+            border-color: rgba(233,69,96,0.5);
+        }
+
+        .setup-option-title {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .setup-option-desc {
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+        }
+
         /* הישגים */
         .achievements {
             display: flex;
@@ -1094,8 +1241,9 @@
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('active')">מוצרים</button>
             <button class="tab-btn" onclick="switchTab('history')">היסטוריה</button>
-            <button class="tab-btn" onclick="switchTab('shopping')">🛒 קניות</button>
-            <button class="tab-btn" onclick="switchTab('insights')">📊 תובנות</button>
+            <button class="tab-btn" onclick="switchTab('shopping')">🛒</button>
+            <button class="tab-btn" onclick="switchTab('insights')">📊</button>
+            <button class="tab-btn" onclick="switchTab('settings')">⚙️</button>
         </div>
 
         <div id="activeTab">
@@ -1191,9 +1339,61 @@
                 <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
             </div>
         </div>
+
+        <div id="settingsTab" style="display: none;">
+            <div class="settings-section">
+                <div class="insights-title">🔗 חיבור לענן</div>
+                <div class="api-status">
+                    <div class="api-status-dot" id="apiStatusDot"></div>
+                    <span id="apiStatusText">בודק חיבור...</span>
+                </div>
+                <input type="text" class="settings-input" id="apiUrlInput" placeholder="הדבק את כתובת ה-API שלך כאן">
+                <button class="settings-btn save" onclick="saveApiUrl()">💾 שמור והתחבר</button>
+                <button class="settings-btn reset" onclick="useDefaultApi()">🔄 השתמש ב-API ברירת מחדל</button>
+            </div>
+
+            <div class="settings-section">
+                <div class="insights-title">📋 איך להגדיר API משלך?</div>
+                <div class="settings-help">
+                    <strong>שלב 1:</strong> צור עותק של הגיליון<br>
+                    <a href="https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/copy" target="_blank">👉 לחץ כאן ליצירת עותק</a><br><br>
+                    <strong>שלב 2:</strong> פתח את התפריט: הרחבות ← Apps Script<br><br>
+                    <strong>שלב 3:</strong> לחץ "פריסה" ← "פריסה חדשה"<br><br>
+                    <strong>שלב 4:</strong> בחר "אפליקציית אינטרנט" ואפשר גישה לכולם<br><br>
+                    <strong>שלב 5:</strong> העתק את הקישור והדבק למעלה
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="insights-title">📤 שתף את האפליקציה</div>
+                <button class="backup-btn export" onclick="shareApp()">📱 שתף לינק</button>
+                <div class="settings-help" style="margin-top:10px;">
+                    שתף את הלינק הזה עם חברים. כל אחד יצטרך להגדיר API משלו כדי לקבל מאגר נפרד.
+                </div>
+            </div>
+        </div>
     </div>
 
     <button class="add-btn" onclick="openAddModal()">+</button>
+
+    <!-- מסך התחברות ראשונית -->
+    <div class="setup-screen" id="setupScreen">
+        <div class="setup-content">
+            <div class="setup-logo">🍎</div>
+            <div class="setup-title">ברוכים הבאים!</div>
+            <div class="setup-subtitle">בחר כיצד להתחיל</div>
+
+            <div class="setup-option" onclick="useDefaultApi(); closeSetup();">
+                <div class="setup-option-title">🚀 התחל מיד (מומלץ)</div>
+                <div class="setup-option-desc">השתמש במאגר משותף להתנסות מהירה</div>
+            </div>
+
+            <div class="setup-option" onclick="closeSetup(); switchTab('settings');">
+                <div class="setup-option-title">☁️ חבר מאגר משלי</div>
+                <div class="setup-option-desc">צור Google Sheet משלך לפרטיות מלאה</div>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal תמונה -->
     <div class="image-modal" id="imageModal" onclick="closeImageModal()">
@@ -1351,7 +1551,12 @@
     </div>
 
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyohF7wtGg8JP1GuNGUB39MY2xADikFI25lAQPqQDfE-O-gHxC21cR2O0gH0dzM1Qzb/exec';
+        const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbyohF7wtGg8JP1GuNGUB39MY2xADikFI25lAQPqQDfE-O-gHxC21cR2O0gH0dzM1Qzb/exec';
+
+        function getApiUrl() {
+            return localStorage.getItem('apiUrl') || DEFAULT_API_URL;
+        }
+
         let products = [];
         let history = [];
         let shoppingList = JSON.parse(localStorage.getItem('shoppingList') || '[]');
@@ -1415,12 +1620,22 @@
         function switchTab(tab) {
             currentTab = tab;
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            if (event && event.target) {
+                event.target.classList.add('active');
+            } else {
+                // אם אין event (כמו קריאה ישירה), מצא את הכפתור הנכון
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    if (btn.getAttribute('onclick').includes(tab)) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
 
             document.getElementById('activeTab').style.display = 'none';
             document.getElementById('historyTab').style.display = 'none';
             document.getElementById('shoppingTab').style.display = 'none';
             document.getElementById('insightsTab').style.display = 'none';
+            document.getElementById('settingsTab').style.display = 'none';
 
             if (tab === 'active') {
                 document.getElementById('activeTab').style.display = 'block';
@@ -1433,13 +1648,17 @@
             } else if (tab === 'insights') {
                 document.getElementById('insightsTab').style.display = 'block';
                 renderInsights();
+            } else if (tab === 'settings') {
+                document.getElementById('settingsTab').style.display = 'block';
+                checkApiStatus();
+                document.getElementById('apiUrlInput').value = localStorage.getItem('apiUrl') || '';
             }
         }
 
         async function loadProducts() {
             try {
                 setStatus('SYNCING', 'syncing');
-                const response = await fetch(API_URL + '?action=get');
+                const response = await fetch(getApiUrl() + '?action=get');
                 products = await response.json();
                 render();
                 setStatus('SYNCED', '');
@@ -1451,7 +1670,7 @@
 
         async function loadHistory() {
             try {
-                const response = await fetch(API_URL + '?action=getHistory');
+                const response = await fetch(getApiUrl() + '?action=getHistory');
                 history = await response.json();
                 if (currentTab === 'history') {
                     renderHistory();
@@ -1496,7 +1715,7 @@
             const id = Date.now().toString();
 
             try {
-                const url = API_URL + '?action=add&id=' + id +
+                const url = getApiUrl() + '?action=add&id=' + id +
                     '&name=' + encodeURIComponent(name) +
                     '&date=' + date +
                     '&category=' + category +
@@ -1540,7 +1759,7 @@
 
             try {
                 // הוספה להיסטוריה בענן
-                const historyUrl = API_URL + '?action=addHistory' +
+                const historyUrl = getApiUrl() + '?action=addHistory' +
                     '&id=' + historyId +
                     '&name=' + encodeURIComponent(disposingProduct.name) +
                     '&category=' + (disposingProduct.category || 'other') +
@@ -1551,7 +1770,7 @@
                 await fetch(historyUrl, { method: 'GET', mode: 'no-cors' });
 
                 // מחיקה מהרשימה הפעילה
-                await fetch(API_URL + '?action=delete&id=' + disposingProduct.id);
+                await fetch(getApiUrl() + '?action=delete&id=' + disposingProduct.id);
                 closeDisposeModal();
                 await loadProducts();
                 setTimeout(loadHistory, 1500);
@@ -1605,10 +1824,10 @@
             setStatus('UPDATING', 'syncing');
 
             try {
-                await fetch(API_URL + '?action=delete&id=' + id);
+                await fetch(getApiUrl() + '?action=delete&id=' + id);
 
                 const image = editingProduct ? editingProduct.image : '';
-                const url = API_URL + '?action=add&id=' + id +
+                const url = getApiUrl() + '?action=add&id=' + id +
                     '&name=' + encodeURIComponent(name) +
                     '&date=' + date +
                     '&category=' + category +
@@ -1827,7 +2046,7 @@
 
             try {
                 // הוספה למוצרים
-                const url = API_URL + '?action=add&id=' + id +
+                const url = getApiUrl() + '?action=add&id=' + id +
                     '&name=' + encodeURIComponent(item.name) +
                     '&date=' + item.expiryDate +
                     '&category=' + (item.category || 'other') +
@@ -1836,7 +2055,7 @@
                 await fetch(url, { method: 'GET', mode: 'no-cors' });
 
                 // מחיקה מההיסטוריה בענן
-                await fetch(API_URL + '?action=deleteHistory&id=' + historyId);
+                await fetch(getApiUrl() + '?action=deleteHistory&id=' + historyId);
 
                 setTimeout(() => {
                     loadHistory();
@@ -1857,7 +2076,7 @@
             setStatus('DELETING', 'syncing');
 
             try {
-                await fetch(API_URL + '?action=deleteHistory&id=' + historyId);
+                await fetch(getApiUrl() + '?action=deleteHistory&id=' + historyId);
                 setTimeout(loadHistory, 1500);
             } catch (error) {
                 setStatus('ERROR', 'error');
@@ -2400,6 +2619,87 @@
                 }
             };
             reader.readAsText(file);
+        }
+
+        // ========== הגדרות API ==========
+        async function checkApiStatus() {
+            const dot = document.getElementById('apiStatusDot');
+            const text = document.getElementById('apiStatusText');
+
+            dot.style.background = '#f6ad55';
+            text.textContent = 'בודק חיבור...';
+
+            try {
+                const response = await fetch(getApiUrl() + '?action=get');
+                if (response.ok) {
+                    dot.style.background = '#64ff96';
+                    text.textContent = 'מחובר לענן';
+                } else {
+                    throw new Error('Response not ok');
+                }
+            } catch (err) {
+                dot.style.background = '#ff6464';
+                text.textContent = 'לא מחובר';
+            }
+        }
+
+        function saveApiUrl() {
+            const url = document.getElementById('apiUrlInput').value.trim();
+            if (!url) {
+                alert('נא להזין כתובת API');
+                return;
+            }
+
+            if (!url.startsWith('https://script.google.com/')) {
+                alert('כתובת לא תקינה. הכתובת צריכה להתחיל ב-https://script.google.com/');
+                return;
+            }
+
+            localStorage.setItem('apiUrl', url);
+            localStorage.setItem('apiConfigured', 'true');
+            alert('הכתובת נשמרה בהצלחה!');
+            checkApiStatus();
+            loadProducts();
+            loadHistory();
+        }
+
+        function useDefaultApi() {
+            localStorage.removeItem('apiUrl');
+            localStorage.setItem('apiConfigured', 'true');
+            document.getElementById('apiUrlInput').value = '';
+            checkApiStatus();
+            loadProducts();
+            loadHistory();
+        }
+
+        function closeSetup() {
+            document.getElementById('setupScreen').classList.remove('show');
+            localStorage.setItem('apiConfigured', 'true');
+        }
+
+        function showSetup() {
+            document.getElementById('setupScreen').classList.add('show');
+        }
+
+        function shareApp() {
+            const url = window.location.href.split('?')[0];
+            if (navigator.share) {
+                navigator.share({
+                    title: 'מעקב תפוגה',
+                    text: 'אפליקציה לניהול תאריכי תפוגה של מוצרי מזון',
+                    url: url
+                });
+            } else if (navigator.clipboard) {
+                navigator.clipboard.writeText(url);
+                alert('הקישור הועתק ללוח!');
+            } else {
+                prompt('העתק את הקישור:', url);
+            }
+        }
+
+        // בדיקה אם צריך להציג מסך התחברות
+        if (!localStorage.getItem('apiConfigured')) {
+            showSetup();
         }
     </script>
 </body>
