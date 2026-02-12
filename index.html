@@ -10,6 +10,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%231a1a2e'/><text x='96' y='130' font-size='100' text-anchor='middle'>🍎</text></svg>">
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -879,6 +880,127 @@
             font-size: 18px;
         }
 
+        /* תובנות וגרפים */
+        .insights-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .insights-title {
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 200px;
+            margin-bottom: 20px;
+        }
+
+        .insight-card {
+            background: rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .insight-card-title {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 5px;
+        }
+
+        .insight-card-value {
+            font-size: 24px;
+            font-weight: 300;
+        }
+
+        .insight-card-value.good { color: rgba(100,255,150,0.9); }
+        .insight-card-value.bad { color: rgba(255,100,100,0.9); }
+
+        .insight-tip {
+            background: rgba(100,200,255,0.1);
+            border-right: 3px solid rgba(100,200,255,0.5);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.8);
+            margin-top: 15px;
+        }
+
+        .backup-section {
+            margin-top: 20px;
+        }
+
+        .backup-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .backup-btn.export {
+            background: rgba(100,200,255,0.2);
+            color: rgba(100,200,255,0.9);
+        }
+
+        .backup-btn.import {
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.7);
+        }
+
+        .backup-btn:hover {
+            opacity: 0.8;
+        }
+
+        /* הישגים */
+        .achievements {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .achievement {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .achievement.unlocked {
+            background: rgba(255,200,50,0.15);
+            border: 1px solid rgba(255,200,50,0.3);
+        }
+
+        .achievement-icon {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .achievement-name {
+            font-size: 11px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .achievement.unlocked .achievement-name {
+            color: rgba(255,200,50,0.9);
+        }
+
         /* Modal סיום מוצר */
         .dispose-modal {
             display: none;
@@ -973,6 +1095,7 @@
             <button class="tab-btn active" onclick="switchTab('active')">מוצרים</button>
             <button class="tab-btn" onclick="switchTab('history')">היסטוריה</button>
             <button class="tab-btn" onclick="switchTab('shopping')">🛒 קניות</button>
+            <button class="tab-btn" onclick="switchTab('insights')">📊 תובנות</button>
         </div>
 
         <div id="activeTab">
@@ -1030,6 +1153,44 @@
                 <div class="frequent-items" id="frequentItems"></div>
             </div>
         </div>
+
+        <div id="insightsTab" style="display: none;">
+            <!-- גרף עוגה -->
+            <div class="insights-section">
+                <div class="insights-title">📊 יחס נאכל/נזרק החודש</div>
+                <div class="chart-container">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+
+            <!-- סטטיסטיקות -->
+            <div class="insights-section">
+                <div class="insights-title">📈 נתונים</div>
+                <div class="insight-card">
+                    <div class="insight-card-title">אחוז ניצול</div>
+                    <div class="insight-card-value good" id="utilizationRate">0%</div>
+                </div>
+                <div class="insight-card">
+                    <div class="insight-card-title">הקטגוריה הכי בזבזנית</div>
+                    <div class="insight-card-value bad" id="wastefulCategory">-</div>
+                </div>
+                <div class="insight-tip" id="insightTip">💡 טיפ: הוסף מוצרים כדי לראות תובנות</div>
+            </div>
+
+            <!-- הישגים -->
+            <div class="insights-section">
+                <div class="insights-title">🏆 הישגים</div>
+                <div class="achievements" id="achievementsList"></div>
+            </div>
+
+            <!-- גיבוי -->
+            <div class="insights-section">
+                <div class="insights-title">💾 גיבוי ושחזור</div>
+                <button class="backup-btn export" onclick="exportBackup()">📤 ייצוא גיבוי</button>
+                <button class="backup-btn import" onclick="document.getElementById('importFile').click()">📥 שחזור מגיבוי</button>
+                <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
+            </div>
+        </div>
     </div>
 
     <button class="add-btn" onclick="openAddModal()">+</button>
@@ -1077,6 +1238,7 @@
                     <select id="category">
                         <option value="dairy">🥛 חלבי</option>
                         <option value="meat">🥩 בשרי</option>
+                        <option value="fish">🐟 דגים</option>
                         <option value="vegetables">🥬 ירקות ופירות</option>
                         <option value="bread">🍞 לחם ומאפים</option>
                         <option value="frozen">🧊 קפוא</option>
@@ -1131,6 +1293,7 @@
                     <select id="editCategory">
                         <option value="dairy">🥛 חלבי</option>
                         <option value="meat">🥩 בשרי</option>
+                        <option value="fish">🐟 דגים</option>
                         <option value="vegetables">🥬 ירקות ופירות</option>
                         <option value="bread">🍞 לחם ומאפים</option>
                         <option value="frozen">🧊 קפוא</option>
@@ -1202,6 +1365,7 @@
         const categories = {
             dairy: '🥛 חלבי',
             meat: '🥩 בשרי',
+            fish: '🐟 דגים',
             vegetables: '🥬 ירקות ופירות',
             bread: '🍞 לחם ומאפים',
             frozen: '🧊 קפוא',
@@ -1256,6 +1420,7 @@
             document.getElementById('activeTab').style.display = 'none';
             document.getElementById('historyTab').style.display = 'none';
             document.getElementById('shoppingTab').style.display = 'none';
+            document.getElementById('insightsTab').style.display = 'none';
 
             if (tab === 'active') {
                 document.getElementById('activeTab').style.display = 'block';
@@ -1265,6 +1430,9 @@
             } else if (tab === 'shopping') {
                 document.getElementById('shoppingTab').style.display = 'block';
                 renderShoppingList();
+            } else if (tab === 'insights') {
+                document.getElementById('insightsTab').style.display = 'block';
+                renderInsights();
             }
         }
 
@@ -1790,7 +1958,8 @@
         const categoryTranslations = {
             'milk': 'חלב', 'cheese': 'גבינה', 'yogurt': 'יוגורט', 'butter': 'חמאה',
             'cream': 'שמנת', 'eggs': 'ביצים', 'meat': 'בשר', 'chicken': 'עוף',
-            'beef': 'בקר', 'fish': 'דג', 'bread': 'לחם', 'pasta': 'פסטה',
+            'beef': 'בקר', 'fish': 'דג', 'salmon': 'סלמון', 'tuna': 'טונה', 'seafood': 'פירות ים',
+            'bread': 'לחם', 'pasta': 'פסטה',
             'rice': 'אורז', 'cereal': 'דגני בוקר', 'juice': 'מיץ', 'water': 'מים',
             'soda': 'משקה מוגז', 'coffee': 'קפה', 'tea': 'תה', 'chocolate': 'שוקולד',
             'cookies': 'עוגיות', 'snack': 'חטיף', 'chips': 'צ\'יפס', 'sauce': 'רוטב',
@@ -1858,6 +2027,9 @@
                     if (cats.includes('dairy') || cats.includes('milk') || cats.includes('cheese') ||
                         cats.includes('yogurt') || cats.includes('חלב') || cats.includes('גבינה')) {
                         category = 'dairy';
+                    } else if (cats.includes('fish') || cats.includes('seafood') || cats.includes('salmon') ||
+                               cats.includes('tuna') || cats.includes('דג') || cats.includes('סלמון')) {
+                        category = 'fish';
                     } else if (cats.includes('meat') || cats.includes('chicken') || cats.includes('beef') ||
                                cats.includes('בשר') || cats.includes('עוף')) {
                         category = 'meat';
@@ -2049,6 +2221,185 @@
                 shoppingList.push({ name: productName, checked: false });
                 saveShoppingList();
             }
+        }
+
+        // ========== תובנות וגרפים ==========
+        let pieChart = null;
+
+        function renderInsights() {
+            renderPieChart();
+            renderStats();
+            renderAchievements();
+        }
+
+        function renderPieChart() {
+            const now = new Date();
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            const monthHistory = history.filter(h => new Date(h.date) >= monthStart);
+
+            const eaten = monthHistory.filter(h => h.status === 'eaten').length;
+            const thrown = monthHistory.filter(h => h.status === 'thrown').length;
+
+            const ctx = document.getElementById('pieChart').getContext('2d');
+
+            if (pieChart) {
+                pieChart.destroy();
+            }
+
+            if (eaten === 0 && thrown === 0) {
+                pieChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['אין נתונים'],
+                        datasets: [{
+                            data: [1],
+                            backgroundColor: ['rgba(255,255,255,0.1)']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+                return;
+            }
+
+            pieChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['נאכלו 🍽️', 'נזרקו 🗑️'],
+                    datasets: [{
+                        data: [eaten, thrown],
+                        backgroundColor: ['rgba(100,255,150,0.7)', 'rgba(255,100,100,0.7)'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: 'rgba(255,255,255,0.8)', font: { size: 14 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderStats() {
+            const now = new Date();
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            const monthHistory = history.filter(h => new Date(h.date) >= monthStart);
+
+            const eaten = monthHistory.filter(h => h.status === 'eaten').length;
+            const thrown = monthHistory.filter(h => h.status === 'thrown').length;
+            const total = eaten + thrown;
+
+            // אחוז ניצול
+            const rate = total > 0 ? Math.round((eaten / total) * 100) : 0;
+            const rateEl = document.getElementById('utilizationRate');
+            rateEl.textContent = rate + '%';
+            rateEl.className = 'insight-card-value ' + (rate >= 70 ? 'good' : 'bad');
+
+            // קטגוריה בזבזנית
+            const thrownByCategory = {};
+            monthHistory.filter(h => h.status === 'thrown').forEach(h => {
+                const cat = h.category || 'other';
+                thrownByCategory[cat] = (thrownByCategory[cat] || 0) + 1;
+            });
+
+            const wastefulCat = Object.entries(thrownByCategory).sort((a, b) => b[1] - a[1])[0];
+            const catEl = document.getElementById('wastefulCategory');
+            if (wastefulCat) {
+                catEl.textContent = categories[wastefulCat[0]] || 'אחר';
+            } else {
+                catEl.textContent = 'אין זריקות! 🎉';
+                catEl.className = 'insight-card-value good';
+            }
+
+            // טיפ
+            const tipEl = document.getElementById('insightTip');
+            const tips = [
+                '💡 קנה כמויות קטנות יותר של מוצרים שנוטים להיזרק',
+                '💡 ארגן את המקרר כך שמוצרים ישנים יהיו בחזית',
+                '💡 הקפא מוצרים לפני שהם פגים',
+                '💡 תכנן ארוחות מראש כדי לצמצם בזבוז',
+                '💡 בדוק את המקרר לפני הקניות'
+            ];
+
+            if (rate >= 90) {
+                tipEl.textContent = '🌟 מעולה! אתה מנצל את המוצרים שלך בצורה מצוינת!';
+            } else if (wastefulCat) {
+                tipEl.textContent = `💡 נסה לקנות פחות ${categories[wastefulCat[0]] || 'מוצרים'} או להשתמש בהם מהר יותר`;
+            } else {
+                tipEl.textContent = tips[Math.floor(Math.random() * tips.length)];
+            }
+        }
+
+        function renderAchievements() {
+            const totalEaten = history.filter(h => h.status === 'eaten').length;
+            const totalThrown = history.filter(h => h.status === 'thrown').length;
+            const totalProducts = products.length;
+
+            const achievements = [
+                { id: 'first', icon: '🌱', name: 'התחלה', unlocked: history.length > 0 },
+                { id: 'ten', icon: '⭐', name: '10 מוצרים', unlocked: totalEaten >= 10 },
+                { id: 'fifty', icon: '🏅', name: '50 מוצרים', unlocked: totalEaten >= 50 },
+                { id: 'zero_waste', icon: '♻️', name: 'אפס בזבוז', unlocked: totalEaten >= 10 && totalThrown === 0 },
+                { id: 'organized', icon: '📦', name: 'מאורגן', unlocked: totalProducts >= 5 },
+                { id: 'master', icon: '👑', name: 'מאסטר', unlocked: totalEaten >= 100 }
+            ];
+
+            const listEl = document.getElementById('achievementsList');
+            listEl.innerHTML = achievements.map(a => `
+                <div class="achievement ${a.unlocked ? 'unlocked' : ''}">
+                    <div class="achievement-icon">${a.unlocked ? a.icon : '🔒'}</div>
+                    <div class="achievement-name">${a.name}</div>
+                </div>
+            `).join('');
+        }
+
+        // ========== גיבוי ושחזור ==========
+        function exportBackup() {
+            const backup = {
+                version: 1,
+                date: new Date().toISOString(),
+                shoppingList: shoppingList,
+                // הנתונים האחרים נמצאים ב-Google Sheets
+            };
+
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `food-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+
+            alert('הגיבוי הורד בהצלחה!');
+        }
+
+        function importBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const backup = JSON.parse(e.target.result);
+
+                    if (backup.shoppingList) {
+                        shoppingList = backup.shoppingList;
+                        saveShoppingList();
+                    }
+
+                    alert('הגיבוי שוחזר בהצלחה!');
+                    location.reload();
+                } catch (err) {
+                    alert('שגיאה בקריאת הקובץ');
+                }
+            };
+            reader.readAsText(file);
         }
     </script>
 </body>
