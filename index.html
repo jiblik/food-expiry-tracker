@@ -1088,6 +1088,84 @@
             margin-bottom: 30px;
         }
 
+        .setup-instructions {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .setup-step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            font-size: 14px;
+            color: rgba(255,255,255,0.8);
+            flex-wrap: wrap;
+        }
+
+        .step-number {
+            width: 24px;
+            height: 24px;
+            background: rgba(233,69,96,0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        .setup-link {
+            color: rgba(100,200,255,0.9);
+            text-decoration: none;
+            background: rgba(100,200,255,0.1);
+            padding: 4px 10px;
+            border-radius: 8px;
+        }
+
+        .setup-input {
+            width: 100%;
+            padding: 16px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            color: white;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .setup-input:focus {
+            outline: none;
+            border-color: rgba(233,69,96,0.5);
+        }
+
+        .setup-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .setup-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .setup-error {
+            color: #ff6b6b;
+            font-size: 13px;
+            text-align: center;
+            margin-top: 15px;
+        }
+
         .setup-option {
             background: rgba(255,255,255,0.08);
             border-radius: 16px;
@@ -1349,7 +1427,6 @@
                 </div>
                 <input type="text" class="settings-input" id="apiUrlInput" placeholder="הדבק את כתובת ה-API שלך כאן">
                 <button class="settings-btn save" onclick="saveApiUrl()">💾 שמור והתחבר</button>
-                <button class="settings-btn reset" onclick="useDefaultApi()">🔄 השתמש ב-API ברירת מחדל</button>
             </div>
 
             <div class="settings-section">
@@ -1381,17 +1458,35 @@
         <div class="setup-content">
             <div class="setup-logo">🍎</div>
             <div class="setup-title">ברוכים הבאים!</div>
-            <div class="setup-subtitle">בחר כיצד להתחיל</div>
+            <div class="setup-subtitle">כדי להתחיל, צור מאגר משלך</div>
 
-            <div class="setup-option" onclick="useDefaultApi(); closeSetup();">
-                <div class="setup-option-title">🚀 התחל מיד (מומלץ)</div>
-                <div class="setup-option-desc">השתמש במאגר משותף להתנסות מהירה</div>
+            <div class="setup-instructions">
+                <div class="setup-step">
+                    <span class="step-number">1</span>
+                    <span>צור עותק של הגיליון:</span>
+                    <a href="https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/copy" target="_blank" class="setup-link">👉 לחץ כאן</a>
+                </div>
+                <div class="setup-step">
+                    <span class="step-number">2</span>
+                    <span>פתח: הרחבות ← Apps Script</span>
+                </div>
+                <div class="setup-step">
+                    <span class="step-number">3</span>
+                    <span>לחץ "פריסה" ← "פריסה חדשה"</span>
+                </div>
+                <div class="setup-step">
+                    <span class="step-number">4</span>
+                    <span>בחר "אפליקציית אינטרנט" ואפשר גישה לכולם</span>
+                </div>
+                <div class="setup-step">
+                    <span class="step-number">5</span>
+                    <span>העתק את הקישור והדבק למטה:</span>
+                </div>
             </div>
 
-            <div class="setup-option" onclick="closeSetup(); switchTab('settings');">
-                <div class="setup-option-title">☁️ חבר מאגר משלי</div>
-                <div class="setup-option-desc">צור Google Sheet משלך לפרטיות מלאה</div>
-            </div>
+            <input type="text" class="setup-input" id="setupApiInput" placeholder="הדבק את כתובת ה-API כאן" dir="ltr">
+            <button class="setup-btn" onclick="saveSetupApi()">🚀 התחבר והתחל</button>
+            <div class="setup-error" id="setupError"></div>
         </div>
     </div>
 
@@ -1551,10 +1646,12 @@
     </div>
 
     <script>
-        const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbyohF7wtGg8JP1GuNGUB39MY2xADikFI25lAQPqQDfE-O-gHxC21cR2O0gH0dzM1Qzb/exec';
-
         function getApiUrl() {
-            return localStorage.getItem('apiUrl') || DEFAULT_API_URL;
+            return localStorage.getItem('apiUrl') || '';
+        }
+
+        function isApiConfigured() {
+            return !!localStorage.getItem('apiUrl');
         }
 
         let products = [];
@@ -1656,6 +1753,11 @@
         }
 
         async function loadProducts() {
+            if (!isApiConfigured()) {
+                setStatus('לא מחובר', 'error');
+                render();
+                return;
+            }
             try {
                 setStatus('SYNCING', 'syncing');
                 const response = await fetch(getApiUrl() + '?action=get');
@@ -1669,6 +1771,7 @@
         }
 
         async function loadHistory() {
+            if (!isApiConfigured()) return;
             try {
                 const response = await fetch(getApiUrl() + '?action=getHistory');
                 history = await response.json();
@@ -2664,17 +2767,49 @@
         }
 
         function useDefaultApi() {
+            // לא בשימוש יותר - כל משתמש חייב API משלו
             localStorage.removeItem('apiUrl');
-            localStorage.setItem('apiConfigured', 'true');
             document.getElementById('apiUrlInput').value = '';
             checkApiStatus();
-            loadProducts();
-            loadHistory();
+        }
+
+        async function saveSetupApi() {
+            const url = document.getElementById('setupApiInput').value.trim();
+            const errorEl = document.getElementById('setupError');
+            const btn = document.querySelector('.setup-btn');
+
+            if (!url) {
+                errorEl.textContent = 'נא להזין כתובת API';
+                return;
+            }
+
+            if (!url.startsWith('https://script.google.com/')) {
+                errorEl.textContent = 'כתובת לא תקינה. הכתובת צריכה להתחיל ב-https://script.google.com/';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'בודק חיבור...';
+            errorEl.textContent = '';
+
+            try {
+                const response = await fetch(url + '?action=get');
+                if (!response.ok) throw new Error('Connection failed');
+
+                localStorage.setItem('apiUrl', url);
+                localStorage.setItem('apiConfigured', 'true');
+                closeSetup();
+                loadProducts();
+                loadHistory();
+            } catch (err) {
+                errorEl.textContent = 'לא הצלחתי להתחבר. בדוק שהכתובת נכונה ושהפריסה פעילה.';
+                btn.disabled = false;
+                btn.textContent = '🚀 התחבר והתחל';
+            }
         }
 
         function closeSetup() {
             document.getElementById('setupScreen').classList.remove('show');
-            localStorage.setItem('apiConfigured', 'true');
         }
 
         function showSetup() {
@@ -2698,7 +2833,7 @@
         }
 
         // בדיקה אם צריך להציג מסך התחברות
-        if (!localStorage.getItem('apiConfigured')) {
+        if (!isApiConfigured()) {
             showSetup();
         }
     </script>
