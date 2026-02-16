@@ -1082,6 +1082,91 @@
             width: 100%;
             padding: 10px;
         }
+
+        /* מאגר מוצרים */
+        .catalog-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            z-index: 1200;
+            overflow-y: auto;
+        }
+
+        .catalog-modal.show { display: block; }
+
+        .catalog-content {
+            padding: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .catalog-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0 15px;
+        }
+
+        .catalog-header h2 {
+            font-size: 1.5rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .catalog-search {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            color: white;
+            font-size: 15px;
+            margin-bottom: 20px;
+        }
+
+        .catalog-search::placeholder {
+            color: rgba(255,255,255,0.3);
+        }
+
+        .catalog-search:focus {
+            outline: none;
+            border-color: rgba(233,69,96,0.5);
+        }
+
+        .catalog-category-title {
+            font-size: 15px;
+            color: rgba(255,255,255,0.6);
+            margin: 18px 0 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .catalog-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .catalog-item {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 10px 16px;
+            border-radius: 12px;
+            color: rgba(255,255,255,0.85);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .catalog-item:hover {
+            background: rgba(233,69,96,0.25);
+            border-color: rgba(233,69,96,0.4);
+            transform: scale(1.03);
+        }
     </style>
 </head>
 <body>
@@ -1223,9 +1308,14 @@
                 <button class="form-modal-close" onclick="closeAddModal()">✕</button>
             </div>
 
-            <button class="scan-btn" onclick="openScanner()">
-                📷 סרוק ברקוד
-            </button>
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <button class="scan-btn" style="flex:1; margin-bottom:0;" onclick="openScanner()">
+                    📷 סרוק ברקוד
+                </button>
+                <button class="scan-btn" style="flex:1; margin-bottom:0; background:rgba(100,200,255,0.2); border-color:rgba(100,200,255,0.4);" onclick="openCatalog()">
+                    📋 בחר מהמאגר
+                </button>
+            </div>
 
             <div class="form-group">
                 <label>שם המוצר</label>
@@ -1347,6 +1437,18 @@
                 <button class="dispose-btn thrown" onclick="disposeProduct('thrown')">🗑️ נזרק</button>
             </div>
             <button class="dispose-cancel" onclick="closeDisposeModal()">ביטול</button>
+        </div>
+    </div>
+
+    <!-- Modal מאגר מוצרים -->
+    <div class="catalog-modal" id="catalogModal">
+        <div class="catalog-content">
+            <div class="catalog-header">
+                <h2>מאגר מוצרים</h2>
+                <button class="form-modal-close" onclick="closeCatalog()">✕</button>
+            </div>
+            <input type="text" class="catalog-search" id="catalogSearch" placeholder="🔍 חפש מוצר..." oninput="filterCatalog()">
+            <div id="catalogList"></div>
         </div>
     </div>
 
@@ -1899,6 +2001,7 @@
                 closeAddModal();
                 closeDisposeModal();
                 closeScanner();
+                closeCatalog();
             }
         });
 
@@ -2071,6 +2174,190 @@
                     startScanner();
                 }, 2000);
             }
+        }
+
+        // ========== מאגר מוצרים פופולריים ==========
+        const productCatalog = {
+            'dairy': {
+                label: '🥛 חלבי',
+                items: [
+                    { name: 'חלב', days: 7 },
+                    { name: 'גבינה צהובה', days: 30 },
+                    { name: 'גבינה לבנה', days: 14 },
+                    { name: 'קוטג\'', days: 10 },
+                    { name: 'שמנת חמוצה', days: 14 },
+                    { name: 'שמנת מתוקה', days: 21 },
+                    { name: 'יוגורט', days: 14 },
+                    { name: 'חמאה', days: 30 },
+                    { name: 'שוקו', days: 10 },
+                    { name: 'לבן', days: 14 },
+                    { name: 'מוצרלה', days: 21 },
+                    { name: 'ביצים', days: 21 },
+                    { name: 'גבינת שמנת', days: 21 },
+                    { name: 'חלב סויה', days: 10 },
+                    { name: 'חלב שקדים', days: 10 }
+                ]
+            },
+            'meat': {
+                label: '🥩 בשרי',
+                items: [
+                    { name: 'חזה עוף', days: 3 },
+                    { name: 'שוק עוף', days: 3 },
+                    { name: 'כרעיים', days: 3 },
+                    { name: 'בשר טחון', days: 2 },
+                    { name: 'סטייק', days: 3 },
+                    { name: 'נקניקיות', days: 7 },
+                    { name: 'שניצל', days: 3 },
+                    { name: 'קבב', days: 2 },
+                    { name: 'פרגית', days: 3 },
+                    { name: 'נקניק', days: 14 },
+                    { name: 'סלמי', days: 21 },
+                    { name: 'פסטרמה', days: 7 },
+                    { name: 'עוף שלם', days: 3 }
+                ]
+            },
+            'fish': {
+                label: '🐟 דגים',
+                items: [
+                    { name: 'סלמון', days: 2 },
+                    { name: 'טונה טרייה', days: 2 },
+                    { name: 'פילה דג', days: 2 },
+                    { name: 'דניס', days: 2 },
+                    { name: 'לברק', days: 2 },
+                    { name: 'טונה בקופסה', days: 365 },
+                    { name: 'סרדינים', days: 365 },
+                    { name: 'דג מעושן', days: 14 },
+                    { name: 'שרימפס', days: 2 }
+                ]
+            },
+            'vegetables': {
+                label: '🥬 ירקות ופירות',
+                items: [
+                    { name: 'עגבניות', days: 7 },
+                    { name: 'מלפפונים', days: 7 },
+                    { name: 'חסה', days: 5 },
+                    { name: 'גזר', days: 14 },
+                    { name: 'בצל', days: 30 },
+                    { name: 'תפוחי אדמה', days: 21 },
+                    { name: 'פלפל', days: 7 },
+                    { name: 'אבוקדו', days: 4 },
+                    { name: 'בננות', days: 5 },
+                    { name: 'תפוחים', days: 14 },
+                    { name: 'תפוזים', days: 14 },
+                    { name: 'לימון', days: 21 },
+                    { name: 'תותים', days: 3 },
+                    { name: 'ענבים', days: 5 },
+                    { name: 'אפרסקים', days: 5 },
+                    { name: 'מנגו', days: 5 },
+                    { name: 'אננס', days: 5 },
+                    { name: 'פטריות', days: 5 },
+                    { name: 'ברוקולי', days: 5 },
+                    { name: 'כרובית', days: 7 }
+                ]
+            },
+            'bread': {
+                label: '🍞 לחם ומאפים',
+                items: [
+                    { name: 'לחם לבן', days: 5 },
+                    { name: 'לחם מלא', days: 5 },
+                    { name: 'פיתות', days: 5 },
+                    { name: 'לחמניות', days: 4 },
+                    { name: 'חלה', days: 4 },
+                    { name: 'טורטייה', days: 14 },
+                    { name: 'עוגה', days: 5 },
+                    { name: 'בורקס', days: 3 },
+                    { name: 'קרואסון', days: 3 },
+                    { name: 'באגט', days: 2 }
+                ]
+            },
+            'frozen': {
+                label: '🧊 קפוא',
+                items: [
+                    { name: 'גלידה', days: 90 },
+                    { name: 'ירקות קפואים', days: 180 },
+                    { name: 'פיצה קפואה', days: 90 },
+                    { name: 'שניצל קפוא', days: 90 },
+                    { name: 'בצק עלים', days: 90 },
+                    { name: 'המבורגר קפוא', days: 90 },
+                    { name: 'פירות קפואים', days: 180 },
+                    { name: 'דג קפוא', days: 120 }
+                ]
+            },
+            'other': {
+                label: '📦 אחר',
+                items: [
+                    { name: 'חומוס', days: 7 },
+                    { name: 'טחינה', days: 30 },
+                    { name: 'מיונז', days: 60 },
+                    { name: 'קטשופ', days: 90 },
+                    { name: 'חרדל', days: 180 },
+                    { name: 'רוטב סויה', days: 180 },
+                    { name: 'רוטב עגבניות', days: 7 },
+                    { name: 'זיתים', days: 30 },
+                    { name: 'חמוצים', days: 60 },
+                    { name: 'ריבה', days: 30 },
+                    { name: 'דבש', days: 365 },
+                    { name: 'שוקולד', days: 180 },
+                    { name: 'חטיף', days: 90 },
+                    { name: 'מיץ תפוזים', days: 7 },
+                    { name: 'סודה', days: 180 }
+                ]
+            }
+        };
+
+        function openCatalog() {
+            document.getElementById('catalogModal').classList.add('show');
+            document.getElementById('catalogSearch').value = '';
+            renderCatalog();
+            document.getElementById('catalogSearch').focus();
+        }
+
+        function closeCatalog() {
+            document.getElementById('catalogModal').classList.remove('show');
+        }
+
+        function renderCatalog(filter) {
+            const listEl = document.getElementById('catalogList');
+            let html = '';
+
+            for (const [catKey, catData] of Object.entries(productCatalog)) {
+                const items = filter
+                    ? catData.items.filter(item => item.name.includes(filter))
+                    : catData.items;
+
+                if (items.length === 0) continue;
+
+                html += `<div class="catalog-category-title">${catData.label}</div>`;
+                html += '<div class="catalog-items">';
+                items.forEach(item => {
+                    html += `<button class="catalog-item" onclick="selectCatalogItem('${item.name}', '${catKey}', ${item.days})">${item.name}</button>`;
+                });
+                html += '</div>';
+            }
+
+            if (!html) {
+                html = '<div class="empty" style="padding:40px;">לא נמצאו מוצרים</div>';
+            }
+
+            listEl.innerHTML = html;
+        }
+
+        function filterCatalog() {
+            const query = document.getElementById('catalogSearch').value.trim();
+            renderCatalog(query || null);
+        }
+
+        function selectCatalogItem(name, category, defaultDays) {
+            // מלא את הטופס
+            document.getElementById('name').value = name;
+            document.getElementById('category').value = category;
+
+            // הגדר תאריך תפוגה אוטומטי
+            const expiry = new Date();
+            expiry.setDate(expiry.getDate() + defaultDays);
+            document.getElementById('date').value = expiry.toISOString().split('T')[0];
+
+            closeCatalog();
         }
 
         // Register Service Worker for PWA
