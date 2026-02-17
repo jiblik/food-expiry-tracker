@@ -1147,25 +1147,81 @@
 
         .catalog-items {
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 8px;
         }
 
         .catalog-item {
             background: rgba(255,255,255,0.08);
             border: 1px solid rgba(255,255,255,0.08);
-            padding: 10px 16px;
+            padding: 12px;
             border-radius: 12px;
             color: rgba(255,255,255,0.85);
             font-size: 14px;
             cursor: pointer;
             transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-align: right;
         }
 
         .catalog-item:hover {
             background: rgba(233,69,96,0.25);
             border-color: rgba(233,69,96,0.4);
-            transform: scale(1.03);
+        }
+
+        .catalog-item-img {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .catalog-item-noimg {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .catalog-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .catalog-item-name {
+            font-size: 15px;
+            font-weight: 400;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .catalog-item-meta {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 2px;
+        }
+
+        .catalog-item-price {
+            font-size: 14px;
+            color: rgba(100,255,150,0.9);
+            flex-shrink: 0;
+        }
+
+        .catalog-empty {
+            text-align: center;
+            color: rgba(255,255,255,0.4);
+            padding: 60px 20px;
+            font-size: 15px;
+            line-height: 1.8;
         }
     </style>
 </head>
@@ -2176,134 +2232,35 @@
             }
         }
 
-        // ========== מאגר מוצרים פופולריים ==========
-        const productCatalog = {
-            'dairy': {
-                label: '🥛 חלבי',
-                items: [
-                    { name: 'חלב', days: 7 },
-                    { name: 'גבינה צהובה', days: 30 },
-                    { name: 'גבינה לבנה', days: 14 },
-                    { name: 'קוטג\'', days: 10 },
-                    { name: 'שמנת חמוצה', days: 14 },
-                    { name: 'שמנת מתוקה', days: 21 },
-                    { name: 'יוגורט', days: 14 },
-                    { name: 'חמאה', days: 30 },
-                    { name: 'שוקו', days: 10 },
-                    { name: 'לבן', days: 14 },
-                    { name: 'מוצרלה', days: 21 },
-                    { name: 'ביצים', days: 21 },
-                    { name: 'גבינת שמנת', days: 21 },
-                    { name: 'חלב סויה', days: 10 },
-                    { name: 'חלב שקדים', days: 10 }
-                ]
-            },
-            'meat': {
-                label: '🥩 בשרי',
-                items: [
-                    { name: 'חזה עוף', days: 3 },
-                    { name: 'שוק עוף', days: 3 },
-                    { name: 'כרעיים', days: 3 },
-                    { name: 'בשר טחון', days: 2 },
-                    { name: 'סטייק', days: 3 },
-                    { name: 'נקניקיות', days: 7 },
-                    { name: 'שניצל', days: 3 },
-                    { name: 'קבב', days: 2 },
-                    { name: 'פרגית', days: 3 },
-                    { name: 'נקניק', days: 14 },
-                    { name: 'סלמי', days: 21 },
-                    { name: 'פסטרמה', days: 7 },
-                    { name: 'עוף שלם', days: 3 }
-                ]
-            },
-            'fish': {
-                label: '🐟 דגים',
-                items: [
-                    { name: 'סלמון', days: 2 },
-                    { name: 'טונה טרייה', days: 2 },
-                    { name: 'פילה דג', days: 2 },
-                    { name: 'דניס', days: 2 },
-                    { name: 'לברק', days: 2 },
-                    { name: 'טונה בקופסה', days: 365 },
-                    { name: 'סרדינים', days: 365 },
-                    { name: 'דג מעושן', days: 14 },
-                    { name: 'שרימפס', days: 2 }
-                ]
-            },
-            'vegetables': {
-                label: '🥬 ירקות ופירות',
-                items: [
-                    { name: 'עגבניות', days: 7 },
-                    { name: 'מלפפונים', days: 7 },
-                    { name: 'חסה', days: 5 },
-                    { name: 'גזר', days: 14 },
-                    { name: 'בצל', days: 30 },
-                    { name: 'תפוחי אדמה', days: 21 },
-                    { name: 'פלפל', days: 7 },
-                    { name: 'אבוקדו', days: 4 },
-                    { name: 'בננות', days: 5 },
-                    { name: 'תפוחים', days: 14 },
-                    { name: 'תפוזים', days: 14 },
-                    { name: 'לימון', days: 21 },
-                    { name: 'תותים', days: 3 },
-                    { name: 'ענבים', days: 5 },
-                    { name: 'אפרסקים', days: 5 },
-                    { name: 'מנגו', days: 5 },
-                    { name: 'אננס', days: 5 },
-                    { name: 'פטריות', days: 5 },
-                    { name: 'ברוקולי', days: 5 },
-                    { name: 'כרובית', days: 7 }
-                ]
-            },
-            'bread': {
-                label: '🍞 לחם ומאפים',
-                items: [
-                    { name: 'לחם לבן', days: 5 },
-                    { name: 'לחם מלא', days: 5 },
-                    { name: 'פיתות', days: 5 },
-                    { name: 'לחמניות', days: 4 },
-                    { name: 'חלה', days: 4 },
-                    { name: 'טורטייה', days: 14 },
-                    { name: 'עוגה', days: 5 },
-                    { name: 'בורקס', days: 3 },
-                    { name: 'קרואסון', days: 3 },
-                    { name: 'באגט', days: 2 }
-                ]
-            },
-            'frozen': {
-                label: '🧊 קפוא',
-                items: [
-                    { name: 'גלידה', days: 90 },
-                    { name: 'ירקות קפואים', days: 180 },
-                    { name: 'פיצה קפואה', days: 90 },
-                    { name: 'שניצל קפוא', days: 90 },
-                    { name: 'בצק עלים', days: 90 },
-                    { name: 'המבורגר קפוא', days: 90 },
-                    { name: 'פירות קפואים', days: 180 },
-                    { name: 'דג קפוא', days: 120 }
-                ]
-            },
-            'other': {
-                label: '📦 אחר',
-                items: [
-                    { name: 'חומוס', days: 7 },
-                    { name: 'טחינה', days: 30 },
-                    { name: 'מיונז', days: 60 },
-                    { name: 'קטשופ', days: 90 },
-                    { name: 'חרדל', days: 180 },
-                    { name: 'רוטב סויה', days: 180 },
-                    { name: 'רוטב עגבניות', days: 7 },
-                    { name: 'זיתים', days: 30 },
-                    { name: 'חמוצים', days: 60 },
-                    { name: 'ריבה', days: 30 },
-                    { name: 'דבש', days: 365 },
-                    { name: 'שוקולד', days: 180 },
-                    { name: 'חטיף', days: 90 },
-                    { name: 'מיץ תפוזים', days: 7 },
-                    { name: 'סודה', days: 180 }
-                ]
-            }
-        };
+        // ========== מאגר מוצרים (מהמוצרים וההיסטוריה שלך) ==========
+        function buildCatalog() {
+            const seen = {};
+            const allItems = [...products, ...history];
+
+            allItems.forEach(item => {
+                const name = item.name;
+                if (!name) return;
+
+                if (!seen[name]) {
+                    seen[name] = {
+                        name: name,
+                        category: item.category || 'other',
+                        price: parsePrice(item.notes),
+                        image: item.image || '',
+                        count: 1
+                    };
+                } else {
+                    seen[name].count++;
+                    // עדכן מחיר ותמונה מהמופע האחרון
+                    const price = parsePrice(item.notes);
+                    if (price > 0) seen[name].price = price;
+                    if (item.image) seen[name].image = item.image;
+                }
+            });
+
+            // מיין לפי תדירות (הכי נקנה קודם)
+            return Object.values(seen).sort((a, b) => b.count - a.count);
+        }
 
         function openCatalog() {
             document.getElementById('catalogModal').classList.add('show');
@@ -2318,28 +2275,53 @@
 
         function renderCatalog(filter) {
             const listEl = document.getElementById('catalogList');
+            let catalog = buildCatalog();
+
+            if (filter) {
+                catalog = catalog.filter(item => item.name.includes(filter));
+            }
+
+            if (catalog.length === 0) {
+                listEl.innerHTML = `<div class="catalog-empty">
+                    ${filter ? 'לא נמצאו מוצרים' : 'עדיין אין מוצרים במאגר.<br>הוסף מוצרים ידנית או סרוק ברקוד,<br>והם יופיעו כאן בפעם הבאה.'}
+                </div>`;
+                return;
+            }
+
+            // קבץ לפי קטגוריות
+            const grouped = {};
+            catalog.forEach(item => {
+                const cat = item.category || 'other';
+                if (!grouped[cat]) grouped[cat] = [];
+                grouped[cat].push(item);
+            });
+
             let html = '';
-
-            for (const [catKey, catData] of Object.entries(productCatalog)) {
-                const items = filter
-                    ? catData.items.filter(item => item.name.includes(filter))
-                    : catData.items;
-
-                if (items.length === 0) continue;
-
-                html += `<div class="catalog-category-title">${catData.label}</div>`;
+            for (const [catKey, items] of Object.entries(grouped)) {
+                const catLabel = categories[catKey] || categories['other'];
+                html += `<div class="catalog-category-title">${catLabel}</div>`;
                 html += '<div class="catalog-items">';
-                items.forEach(item => {
-                    html += `<button class="catalog-item" onclick="selectCatalogItem('${item.name}', '${catKey}', ${item.days})">${item.name}</button>`;
+                items.forEach((item, idx) => {
+                    const imgHtml = item.image
+                        ? `<img class="catalog-item-img" src="${item.image}">`
+                        : `<div class="catalog-item-noimg">${(catLabel || '').split(' ')[0]}</div>`;
+                    const priceHtml = item.price > 0 ? `<div class="catalog-item-price">€${item.price}</div>` : '';
+                    html += `<button class="catalog-item" data-idx="${catKey}-${idx}" onclick="selectFromCatalog(this)">
+                        ${imgHtml}
+                        <div class="catalog-item-info">
+                            <div class="catalog-item-name">${item.name}</div>
+                            <div class="catalog-item-meta">נוסף ${item.count} פעמים</div>
+                        </div>
+                        ${priceHtml}
+                    </button>`;
                 });
                 html += '</div>';
             }
 
-            if (!html) {
-                html = '<div class="empty" style="padding:40px;">לא נמצאו מוצרים</div>';
-            }
-
             listEl.innerHTML = html;
+            // שמור את הקטלוג כ-data לגישה מהירה
+            listEl._catalog = catalog;
+            listEl._grouped = grouped;
         }
 
         function filterCatalog() {
@@ -2347,15 +2329,28 @@
             renderCatalog(query || null);
         }
 
-        function selectCatalogItem(name, category, defaultDays) {
-            // מלא את הטופס
-            document.getElementById('name').value = name;
-            document.getElementById('category').value = category;
+        function selectFromCatalog(btn) {
+            const name = btn.querySelector('.catalog-item-name').textContent;
+            const catalog = buildCatalog();
+            const item = catalog.find(c => c.name === name);
+            if (!item) return;
 
-            // הגדר תאריך תפוגה אוטומטי
-            const expiry = new Date();
-            expiry.setDate(expiry.getDate() + defaultDays);
-            document.getElementById('date').value = expiry.toISOString().split('T')[0];
+            document.getElementById('name').value = item.name;
+            document.getElementById('category').value = item.category || 'other';
+
+            if (item.price > 0) {
+                document.getElementById('price').value = item.price;
+            }
+
+            if (item.image) {
+                currentImage = item.image;
+                document.getElementById('imageArea').style.backgroundImage = `url(${item.image})`;
+                document.getElementById('imageText').style.display = 'none';
+            }
+
+            // תאריך תפוגה - המשתמש ימלא ידנית
+            document.getElementById('date').value = '';
+            document.getElementById('date').focus();
 
             closeCatalog();
         }
