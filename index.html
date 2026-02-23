@@ -757,102 +757,6 @@
             background: rgba(255,255,255,0.15);
         }
 
-        /* רשימת קניות */
-        .shopping-list {
-            margin-top: 20px;
-        }
-
-        .shopping-item {
-            background: rgba(255,255,255,0.05);
-            padding: 14px;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .shopping-item.checked {
-            opacity: 0.5;
-            text-decoration: line-through;
-        }
-
-        .shopping-item-name {
-            flex: 1;
-            font-size: 15px;
-        }
-
-        .shopping-item-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .shopping-btn {
-            background: rgba(255,255,255,0.1);
-            border: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 14px;
-            color: rgba(255,255,255,0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .shopping-btn:hover {
-            background: rgba(255,255,255,0.2);
-        }
-
-        .add-shopping-btn {
-            width: 100%;
-            padding: 14px;
-            background: rgba(100,200,255,0.2);
-            border: 1px dashed rgba(100,200,255,0.4);
-            color: rgba(100,200,255,0.9);
-            border-radius: 12px;
-            font-size: 14px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        .add-shopping-btn:hover {
-            background: rgba(100,200,255,0.3);
-        }
-
-        .frequent-products {
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 12px;
-        }
-
-        .frequent-title {
-            font-size: 13px;
-            color: rgba(255,255,255,0.5);
-            margin-bottom: 12px;
-        }
-
-        .frequent-items {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .frequent-item {
-            background: rgba(255,255,255,0.1);
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-size: 13px;
-            cursor: pointer;
-            border: none;
-            color: rgba(255,255,255,0.8);
-        }
-
-        .frequent-item:hover {
-            background: rgba(255,255,255,0.2);
-        }
 
         /* התראות */
         .notification-banner {
@@ -1235,7 +1139,6 @@
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('active')">מוצרים</button>
             <button class="tab-btn" onclick="switchTab('history')">היסטוריה</button>
-            <button class="tab-btn" onclick="switchTab('shopping')">🛒 קניות</button>
             <button class="tab-btn" onclick="switchTab('insights')">📊 תובנות</button>
         </div>
 
@@ -1285,16 +1188,6 @@
             <button class="export-btn" onclick="exportToExcel()">📊 ייצוא לאקסל</button>
         </div>
 
-        <div id="shoppingTab" style="display: none;">
-            <div class="shopping-list" id="shoppingList"></div>
-            <button class="add-shopping-btn" onclick="openAddShoppingModal()">+ הוסף פריט לרשימה</button>
-
-            <div class="frequent-products" id="frequentProducts">
-                <div class="frequent-title">🔥 מוצרים שקנית בעבר</div>
-                <div class="frequent-items" id="frequentItems"></div>
-            </div>
-        </div>
-
         <div id="insightsTab" style="display: none;">
             <!-- גרף עוגה -->
             <div class="insights-section">
@@ -1342,20 +1235,6 @@
         <img id="imageModalImg" src="" alt="">
     </div>
 
-    <!-- Modal הוספת פריט לקניות -->
-    <div class="dispose-modal" id="addShoppingModal">
-        <div class="dispose-modal-content">
-            <div class="dispose-modal-title">הוסף לרשימת קניות</div>
-            <div class="form-group" style="margin: 20px 0;">
-                <input type="text" id="shoppingItemName" placeholder="שם הפריט" style="width:100%; padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.1); color:white;">
-            </div>
-            <div class="dispose-buttons">
-                <button class="dispose-btn eaten" onclick="addShoppingItem()">הוסף</button>
-            </div>
-            <button class="dispose-cancel" onclick="closeAddShoppingModal()">ביטול</button>
-        </div>
-    </div>
-
     <!-- Modal הוספה -->
     <div class="form-modal" id="addModal">
         <div class="form-modal-content">
@@ -1394,6 +1273,17 @@
                 <div class="form-group">
                     <label>מחיר (€)</label>
                     <input type="number" id="price" placeholder="0" step="0.01" min="0">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>כמות (יח')</label>
+                    <input type="number" id="quantity" placeholder="1" step="1" min="1">
+                </div>
+                <div class="form-group">
+                    <label>משקל (גרם)</label>
+                    <input type="number" id="weight" placeholder="0" step="1" min="0">
                 </div>
             </div>
 
@@ -1449,6 +1339,17 @@
                 <div class="form-group">
                     <label>מחיר (€)</label>
                     <input type="number" id="editPrice" placeholder="0" step="0.01" min="0">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>כמות (יח')</label>
+                    <input type="number" id="editQuantity" placeholder="1" step="1" min="1">
+                </div>
+                <div class="form-group">
+                    <label>משקל (גרם)</label>
+                    <input type="number" id="editWeight" placeholder="0" step="1" min="0">
                 </div>
             </div>
 
@@ -1512,7 +1413,6 @@
         const API_URL = 'https://script.google.com/macros/s/AKfycbyohF7wtGg8JP1GuNGUB39MY2xADikFI25lAQPqQDfE-O-gHxC21cR2O0gH0dzM1Qzb/exec';
         let products = [];
         let history = [];
-        let shoppingList = JSON.parse(localStorage.getItem('shoppingList') || '[]');
         let currentImage = null;
         let editingProduct = null;
         let disposingProduct = null;
@@ -1577,7 +1477,6 @@
 
             document.getElementById('activeTab').style.display = 'none';
             document.getElementById('historyTab').style.display = 'none';
-            document.getElementById('shoppingTab').style.display = 'none';
             document.getElementById('insightsTab').style.display = 'none';
 
             if (tab === 'active') {
@@ -1585,9 +1484,6 @@
             } else if (tab === 'history') {
                 document.getElementById('historyTab').style.display = 'block';
                 renderHistory();
-            } else if (tab === 'shopping') {
-                document.getElementById('shoppingTab').style.display = 'block';
-                renderShoppingList();
             } else if (tab === 'insights') {
                 document.getElementById('insightsTab').style.display = 'block';
                 renderInsights();
@@ -1628,6 +1524,8 @@
             document.getElementById('name').value = '';
             document.getElementById('date').value = '';
             document.getElementById('price').value = '';
+            document.getElementById('quantity').value = '';
+            document.getElementById('weight').value = '';
             document.getElementById('notes').value = '';
             document.getElementById('imageArea').style.backgroundImage = '';
             document.getElementById('imageText').style.display = '';
@@ -1639,6 +1537,8 @@
             const date = document.getElementById('date').value;
             const category = document.getElementById('category').value;
             const price = document.getElementById('price').value || '0';
+            const quantity = document.getElementById('quantity').value || '0';
+            const weight = document.getElementById('weight').value || '0';
             const notes = document.getElementById('notes').value.trim();
 
             if (!name || !date) {
@@ -1658,7 +1558,7 @@
                     '&name=' + encodeURIComponent(name) +
                     '&date=' + date +
                     '&category=' + category +
-                    '&notes=' + encodeURIComponent(notes + '|price:' + price) +
+                    '&notes=' + encodeURIComponent(notes + '|price:' + price + '|qty:' + quantity + '|weight:' + weight) +
                     '&image=' + encodeURIComponent(currentImage || '');
                 await fetch(url, { method: 'GET', mode: 'no-cors' });
 
@@ -1713,11 +1613,6 @@
                 closeDisposeModal();
                 await loadProducts();
                 setTimeout(loadHistory, 1500);
-
-                // הצע להוסיף לרשימת קניות
-                setTimeout(() => {
-                    suggestAddToShopping(disposingProduct.name);
-                }, 500);
             } catch (error) {
                 setStatus('ERROR', 'error');
             }
@@ -1725,6 +1620,21 @@
 
         async function deleteProduct(id) {
             openDisposeModal(id);
+        }
+
+        async function quickDelete(id) {
+            const product = products.find(p => String(p.id) === String(id));
+            if (!product) return;
+
+            if (!confirm(`למחוק את "${product.name}" לצמיתות?`)) return;
+
+            setStatus('DELETING', 'syncing');
+            try {
+                await fetch(API_URL + '?action=delete&id=' + id);
+                await loadProducts();
+            } catch (error) {
+                setStatus('ERROR', 'error');
+            }
         }
 
         function openEditModal(id) {
@@ -1737,6 +1647,8 @@
             document.getElementById('editCategory').value = product.category || 'other';
             document.getElementById('editDate').value = product.date;
             document.getElementById('editPrice').value = parsePrice(product.notes);
+            document.getElementById('editQuantity').value = parseQuantity(product.notes) || '';
+            document.getElementById('editWeight').value = parseWeight(product.notes) || '';
             document.getElementById('editNotes').value = parseNotes(product.notes);
 
             document.getElementById('editModal').classList.add('show');
@@ -1753,6 +1665,8 @@
             const category = document.getElementById('editCategory').value;
             const date = document.getElementById('editDate').value;
             const price = document.getElementById('editPrice').value || '0';
+            const quantity = document.getElementById('editQuantity').value || '0';
+            const weight = document.getElementById('editWeight').value || '0';
             const notes = document.getElementById('editNotes').value.trim();
 
             if (!name || !date) {
@@ -1770,7 +1684,7 @@
                     '&name=' + encodeURIComponent(name) +
                     '&date=' + date +
                     '&category=' + category +
-                    '&notes=' + encodeURIComponent(notes + '|price:' + price) +
+                    '&notes=' + encodeURIComponent(notes + '|price:' + price + '|qty:' + quantity + '|weight:' + weight) +
                     '&image=' + encodeURIComponent(image || '');
                 await fetch(url, { method: 'GET', mode: 'no-cors' });
 
@@ -1788,9 +1702,21 @@
             return match ? parseFloat(match[1]) : 0;
         }
 
+        function parseQuantity(notes) {
+            if (!notes) return 0;
+            const match = notes.match(/\|qty:(\d+)/);
+            return match ? parseInt(match[1]) : 0;
+        }
+
+        function parseWeight(notes) {
+            if (!notes) return 0;
+            const match = notes.match(/\|weight:(\d+)/);
+            return match ? parseInt(match[1]) : 0;
+        }
+
         function parseNotes(notes) {
             if (!notes) return '';
-            return notes.replace(/\|price:\d+\.?\d*/, '').trim();
+            return notes.replace(/\|price:\d+\.?\d*/, '').replace(/\|qty:\d+/, '').replace(/\|weight:\d+/, '').trim();
         }
 
         function openImageModal(imageSrc) {
@@ -1901,8 +1827,14 @@
 
                 const catName = categories[p.category] || categories['other'];
                 const price = parsePrice(p.notes);
+                const qty = parseQuantity(p.notes);
+                const weight = parseWeight(p.notes);
                 const notesText = parseNotes(p.notes);
                 const priceHtml = price > 0 ? `<div class="product-price">€${price.toFixed(2)}</div>` : '';
+                const qtyParts = [];
+                if (qty > 0) qtyParts.push(qty + " יח'");
+                if (weight > 0) qtyParts.push(weight + ' גרם');
+                const qtyHtml = qtyParts.length > 0 ? `<div class="product-meta">${qtyParts.join(' · ')}</div>` : '';
                 const notesHtml = notesText ? `<div class="product-notes">${notesText}</div>` : '';
 
                 return `
@@ -1913,12 +1845,14 @@
                             <div class="product-category">${catName}</div>
                             <div class="product-meta">${dateStr}</div>
                             ${priceHtml}
+                            ${qtyHtml}
                             ${notesHtml}
                             ${status}
                         </div>
                         <div class="product-actions">
                             <button class="btn-action" onclick="openEditModal('${p.id}')" title="ערוך">✏️</button>
-                            <button class="btn-action delete" onclick="deleteProduct('${p.id}')" title="סיים">✓</button>
+                            <button class="btn-action eaten" onclick="openDisposeModal('${p.id}')" title="סיים">✓</button>
+                            <button class="btn-action delete" onclick="quickDelete('${p.id}')" title="מחק">🗑️</button>
                         </div>
                     </div>
                 `;
@@ -2405,106 +2339,6 @@
         // בדיקת התראות בטעינה
         setTimeout(checkNotificationSupport, 2000);
 
-        // ========== רשימת קניות ==========
-        function renderShoppingList() {
-            const listEl = document.getElementById('shoppingList');
-
-            if (shoppingList.length === 0) {
-                listEl.innerHTML = '<div class="empty">רשימת הקניות ריקה</div>';
-            } else {
-                listEl.innerHTML = shoppingList.map((item, index) => `
-                    <div class="shopping-item ${item.checked ? 'checked' : ''}">
-                        <span class="shopping-item-name">${item.name}</span>
-                        <div class="shopping-item-actions">
-                            <button class="shopping-btn" onclick="toggleShoppingItem(${index})">${item.checked ? '↩️' : '✓'}</button>
-                            <button class="shopping-btn" onclick="removeShoppingItem(${index})">✕</button>
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            // מוצרים תכופים מההיסטוריה
-            renderFrequentProducts();
-        }
-
-        function renderFrequentProducts() {
-            const frequentEl = document.getElementById('frequentItems');
-
-            // ספור מוצרים מההיסטוריה
-            const productCounts = {};
-            history.forEach(h => {
-                productCounts[h.name] = (productCounts[h.name] || 0) + 1;
-            });
-
-            // מיין לפי תדירות ולקח 8 הראשונים
-            const frequent = Object.entries(productCounts)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 8)
-                .map(([name]) => name);
-
-            if (frequent.length === 0) {
-                document.getElementById('frequentProducts').style.display = 'none';
-                return;
-            }
-
-            document.getElementById('frequentProducts').style.display = 'block';
-            frequentEl.innerHTML = frequent.map(name => `
-                <button class="frequent-item" onclick="addFrequentToShopping('${name}')">${name}</button>
-            `).join('');
-        }
-
-        function addFrequentToShopping(name) {
-            if (!shoppingList.find(item => item.name === name)) {
-                shoppingList.push({ name, checked: false });
-                saveShoppingList();
-                renderShoppingList();
-            }
-        }
-
-        function openAddShoppingModal() {
-            document.getElementById('addShoppingModal').classList.add('show');
-            document.getElementById('shoppingItemName').value = '';
-            document.getElementById('shoppingItemName').focus();
-        }
-
-        function closeAddShoppingModal() {
-            document.getElementById('addShoppingModal').classList.remove('show');
-        }
-
-        function addShoppingItem() {
-            const name = document.getElementById('shoppingItemName').value.trim();
-            if (!name) return;
-
-            shoppingList.push({ name, checked: false });
-            saveShoppingList();
-            closeAddShoppingModal();
-            renderShoppingList();
-        }
-
-        function toggleShoppingItem(index) {
-            shoppingList[index].checked = !shoppingList[index].checked;
-            saveShoppingList();
-            renderShoppingList();
-        }
-
-        function removeShoppingItem(index) {
-            shoppingList.splice(index, 1);
-            saveShoppingList();
-            renderShoppingList();
-        }
-
-        function saveShoppingList() {
-            localStorage.setItem('shoppingList', JSON.stringify(shoppingList));
-        }
-
-        // הצעה להוסיף לרשימת קניות כשמוצר נגמר
-        function suggestAddToShopping(productName) {
-            if (confirm(`להוסיף "${productName}" לרשימת הקניות?`)) {
-                shoppingList.push({ name: productName, checked: false });
-                saveShoppingList();
-            }
-        }
-
         // ========== תובנות וגרפים ==========
         let pieChart = null;
 
@@ -2648,7 +2482,6 @@
             const backup = {
                 version: 1,
                 date: new Date().toISOString(),
-                shoppingList: shoppingList,
                 // הנתונים האחרים נמצאים ב-Google Sheets
             };
 
@@ -2669,11 +2502,6 @@
             reader.onload = function(e) {
                 try {
                     const backup = JSON.parse(e.target.result);
-
-                    if (backup.shoppingList) {
-                        shoppingList = backup.shoppingList;
-                        saveShoppingList();
-                    }
 
                     alert('הגיבוי שוחזר בהצלחה!');
                     location.reload();
