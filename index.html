@@ -757,6 +757,43 @@
             background: rgba(255,255,255,0.15);
         }
 
+        /* בורר חודש */
+        .month-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .month-nav {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            color: rgba(255,255,255,0.7);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .month-nav:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .month-nav:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .month-label {
+            font-size: 16px;
+            font-weight: 400;
+            color: rgba(255,255,255,0.9);
+            min-width: 120px;
+            text-align: center;
+        }
 
         /* התראות */
         .notification-banner {
@@ -1167,8 +1204,13 @@
         </div>
 
         <div id="historyTab" style="display: none;">
+            <div class="month-selector">
+                <button class="month-nav" onclick="changeHistoryMonth(-1)">◀</button>
+                <span class="month-label" id="historyMonthLabel"></span>
+                <button class="month-nav" onclick="changeHistoryMonth(1)">▶</button>
+            </div>
             <div class="stats-box">
-                <div class="stats-title">סיכום חודשי</div>
+                <div class="stats-title" id="statsTitle">סיכום חודשי</div>
                 <div class="stats-row">
                     <div class="stat-item">
                         <div class="stat-value eaten" id="eatenCount">0</div>
@@ -1419,6 +1461,7 @@
         let currentTab = 'active';
         let currentSort = 'date';
         let sortDirection = 'asc'; // asc = ascending, desc = descending
+        let historyMonthOffset = 0; // 0 = חודש נוכחי, -1 = חודש קודם, וכו'
 
         const categories = {
             dairy: '🥛 חלבי',
@@ -1859,11 +1902,39 @@
             }).join('');
         }
 
-        function renderHistory() {
+        function getSelectedMonthRange() {
             const now = new Date();
-            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            const start = new Date(now.getFullYear(), now.getMonth() + historyMonthOffset, 1);
+            const end = new Date(now.getFullYear(), now.getMonth() + historyMonthOffset + 1, 0, 23, 59, 59);
+            return { start, end };
+        }
 
-            const monthHistory = history.filter(h => new Date(h.date) >= monthStart);
+        function getMonthLabel() {
+            const { start } = getSelectedMonthRange();
+            const months = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+            return months[start.getMonth()] + ' ' + start.getFullYear();
+        }
+
+        function changeHistoryMonth(direction) {
+            if (direction === 1 && historyMonthOffset >= 0) return;
+            historyMonthOffset += direction;
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const { start, end } = getSelectedMonthRange();
+
+            // עדכון תווית החודש
+            document.getElementById('historyMonthLabel').textContent = getMonthLabel();
+
+            // כפתור קדימה מושבת אם אנחנו בחודש הנוכחי
+            const forwardBtn = document.querySelector('.month-nav:last-child');
+            if (forwardBtn) forwardBtn.disabled = (historyMonthOffset >= 0);
+
+            const monthHistory = history.filter(h => {
+                const d = new Date(h.date);
+                return d >= start && d <= end;
+            });
 
             const eaten = monthHistory.filter(h => h.status === 'eaten');
             const thrown = monthHistory.filter(h => h.status === 'thrown');
@@ -1876,7 +1947,7 @@
             const listEl = document.getElementById('historyList');
 
             if (monthHistory.length === 0) {
-                listEl.innerHTML = '<div class="empty">אין היסטוריה החודש</div>';
+                listEl.innerHTML = '<div class="empty">אין היסטוריה בחודש זה</div>';
                 return;
             }
 
@@ -1958,12 +2029,14 @@
         }
 
         function exportToExcel() {
-            const now = new Date();
-            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-            const monthHistory = history.filter(h => new Date(h.date) >= monthStart);
+            const { start, end } = getSelectedMonthRange();
+            const monthHistory = history.filter(h => {
+                const d = new Date(h.date);
+                return d >= start && d <= end;
+            });
 
             if (monthHistory.length === 0) {
-                alert('אין נתונים לייצוא');
+                alert('אין נתונים לייצוא בחודש זה');
                 return;
             }
 
@@ -1980,7 +2053,7 @@
             const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `food-tracker-${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}.csv`;
+            link.download = `food-tracker-${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}.csv`;
             link.click();
         }
 
