@@ -1028,6 +1028,93 @@
         }
 
         /* מאגר מוצרים */
+        /* Autocomplete */
+        .autocomplete-wrapper {
+            position: relative;
+        }
+
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #1e2340;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            max-height: 220px;
+            overflow-y: auto;
+            z-index: 50;
+            display: none;
+        }
+
+        .autocomplete-list.show {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.active {
+            background: rgba(233,69,96,0.25);
+        }
+
+        .autocomplete-item img {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .autocomplete-item .ac-noimg {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .autocomplete-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .autocomplete-item-name {
+            font-size: 14px;
+            color: rgba(255,255,255,0.9);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .autocomplete-item-meta {
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+        }
+
+        .autocomplete-item-price {
+            font-size: 13px;
+            color: rgba(100,255,150,0.8);
+            flex-shrink: 0;
+        }
+
         .catalog-modal {
             display: none;
             position: fixed;
@@ -1297,9 +1384,10 @@
                 </button>
             </div>
 
-            <div class="form-group">
+            <div class="form-group autocomplete-wrapper">
                 <label>שם המוצר</label>
-                <input type="text" id="name" placeholder="לדוגמה: חלב תנובה">
+                <input type="text" id="name" placeholder="לדוגמה: חלב תנובה" autocomplete="off" oninput="onNameInput()" onkeydown="onNameKeydown(event)">
+                <div class="autocomplete-list" id="autocompleteList"></div>
             </div>
 
             <div class="form-row">
@@ -1576,6 +1664,7 @@
             document.getElementById('imageArea').style.backgroundImage = '';
             document.getElementById('imageText').style.display = '';
             currentImage = null;
+            hideAutocomplete();
         }
 
         async function addProduct() {
@@ -2256,14 +2345,20 @@
                         name: name,
                         category: item.category || 'other',
                         price: parsePrice(item.notes),
+                        quantity: parseQuantity(item.notes),
+                        weight: parseWeight(item.notes),
                         image: item.image || '',
                         count: 1
                     };
                 } else {
                     seen[name].count++;
-                    // עדכן מחיר ותמונה מהמופע האחרון
+                    // עדכן מחיר, כמות, משקל ותמונה מהמופע האחרון
                     const price = parsePrice(item.notes);
                     if (price > 0) seen[name].price = price;
+                    const qty = parseQuantity(item.notes);
+                    if (qty > 0) seen[name].quantity = qty;
+                    const wt = parseWeight(item.notes);
+                    if (wt > 0) seen[name].weight = wt;
                     if (item.image) seen[name].image = item.image;
                 }
             });
@@ -2344,12 +2439,22 @@
             const catalog = buildCatalog();
             const item = catalog.find(c => c.name === name);
             if (!item) return;
+            fillFromCatalogItem(item);
+            closeCatalog();
+        }
 
+        function fillFromCatalogItem(item) {
             document.getElementById('name').value = item.name;
             document.getElementById('category').value = item.category || 'other';
 
             if (item.price > 0) {
                 document.getElementById('price').value = item.price;
+            }
+            if (item.quantity > 0) {
+                document.getElementById('quantity').value = item.quantity;
+            }
+            if (item.weight > 0) {
+                document.getElementById('weight').value = item.weight;
             }
 
             if (item.image) {
@@ -2361,9 +2466,76 @@
             // תאריך תפוגה - המשתמש ימלא ידנית
             document.getElementById('date').value = '';
             document.getElementById('date').focus();
-
-            closeCatalog();
+            hideAutocomplete();
         }
+
+        // ========== Autocomplete ==========
+        let acIndex = -1;
+
+        function onNameInput() {
+            const query = document.getElementById('name').value.trim();
+            if (query.length < 1) { hideAutocomplete(); return; }
+
+            const catalog = buildCatalog();
+            const matches = catalog.filter(item =>
+                item.name.includes(query)
+            ).slice(0, 6);
+
+            if (matches.length === 0) { hideAutocomplete(); return; }
+
+            const listEl = document.getElementById('autocompleteList');
+            const catLabels = { dairy: '🥛', meat: '🥩', fish: '🐟', vegetables: '🥬', bread: '🍞', frozen: '🧊', other: '📦' };
+
+            listEl.innerHTML = matches.map((item, i) => {
+                const imgHtml = item.image
+                    ? `<img src="${item.image}">`
+                    : `<div class="ac-noimg">${catLabels[item.category] || '📦'}</div>`;
+                const priceHtml = item.price > 0 ? `<div class="autocomplete-item-price">€${item.price}</div>` : '';
+                return `<div class="autocomplete-item${i === acIndex ? ' active' : ''}" onmousedown="selectAutocomplete(${i})">${imgHtml}<div class="autocomplete-item-info"><div class="autocomplete-item-name">${item.name}</div><div class="autocomplete-item-meta">נוסף ${item.count} פעמים</div></div>${priceHtml}</div>`;
+            }).join('');
+
+            listEl._matches = matches;
+            listEl.classList.add('show');
+        }
+
+        function onNameKeydown(e) {
+            const listEl = document.getElementById('autocompleteList');
+            if (!listEl.classList.contains('show')) return;
+            const matches = listEl._matches || [];
+            if (matches.length === 0) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                acIndex = Math.min(acIndex + 1, matches.length - 1);
+                onNameInput();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                acIndex = Math.max(acIndex - 1, 0);
+                onNameInput();
+            } else if (e.key === 'Enter' && acIndex >= 0) {
+                e.preventDefault();
+                selectAutocomplete(acIndex);
+            } else {
+                acIndex = -1;
+            }
+        }
+
+        function selectAutocomplete(idx) {
+            const listEl = document.getElementById('autocompleteList');
+            const matches = listEl._matches || [];
+            if (!matches[idx]) return;
+            fillFromCatalogItem(matches[idx]);
+            acIndex = -1;
+        }
+
+        function hideAutocomplete() {
+            document.getElementById('autocompleteList').classList.remove('show');
+            acIndex = -1;
+        }
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.autocomplete-wrapper')) hideAutocomplete();
+        });
 
         // Register Service Worker for PWA
         if ('serviceWorker' in navigator) {
