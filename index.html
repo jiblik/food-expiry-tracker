@@ -1788,31 +1788,39 @@
         async function disposeProduct(status) {
             if (!disposingProduct) return;
 
-            const price = parsePrice(disposingProduct.notes);
+            const product = disposingProduct;
+            const price = parsePrice(product.notes);
             const historyId = Date.now().toString();
             const historyDate = new Date().toISOString();
 
-            setStatus('DISPOSING', 'syncing');
+            // Optimistic UI - עדכון מיידי של הממשק
+            products = products.filter(p => String(p.id) !== String(product.id));
+            closeDisposeModal();
+            render();
+            setStatus('SYNCING', 'syncing');
 
+            // קריאות API ברקע במקביל
             try {
-                // הוספה להיסטוריה בענן
                 const historyUrl = API_URL + '?action=addHistory' +
                     '&id=' + historyId +
-                    '&name=' + encodeURIComponent(disposingProduct.name) +
-                    '&category=' + (disposingProduct.category || 'other') +
+                    '&name=' + encodeURIComponent(product.name) +
+                    '&category=' + (product.category || 'other') +
                     '&price=' + price +
                     '&status=' + status +
                     '&date=' + encodeURIComponent(historyDate) +
-                    '&expiryDate=' + disposingProduct.date;
-                await fetch(historyUrl, { method: 'GET', mode: 'no-cors' });
+                    '&expiryDate=' + product.date;
 
-                // מחיקה מהרשימה הפעילה
-                await fetch(API_URL + '?action=delete&id=' + disposingProduct.id);
-                closeDisposeModal();
-                await loadProducts();
-                setTimeout(loadHistory, 1500);
+                await Promise.all([
+                    fetch(historyUrl, { method: 'GET', mode: 'no-cors' }),
+                    fetch(API_URL + '?action=delete&id=' + product.id)
+                ]);
+
+                setStatus('SYNCED', 'synced');
+                loadHistory();
             } catch (error) {
+                // במקרה של שגיאה - טען מחדש מהשרת
                 setStatus('ERROR', 'error');
+                await loadProducts();
             }
         }
 
@@ -1826,12 +1834,17 @@
 
             if (!confirm(`למחוק את "${product.name}" לצמיתות?`)) return;
 
-            setStatus('DELETING', 'syncing');
+            // Optimistic UI
+            products = products.filter(p => String(p.id) !== String(id));
+            render();
+            setStatus('SYNCING', 'syncing');
+
             try {
                 await fetch(API_URL + '?action=delete&id=' + id);
-                await loadProducts();
+                setStatus('SYNCED', 'synced');
             } catch (error) {
                 setStatus('ERROR', 'error');
+                await loadProducts();
             }
         }
 
